@@ -1,24 +1,100 @@
-# Compiled class file
+# SkillSwap — .gitignore monorepo
+# Backend (Java/Maven) + Frontend (Angular/Node) + Mobile (Android)
+# 1. BACKEND — Java / Maven / Spring Boot
+backend/target/
+backend/.mvn/
+backend/mvnw
+backend/mvnw.cmd
+
+!backend/.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.properties
+
+# Fichiers Java compilés
 *.class
-
-# Log file
-*.log
-
-# BlueJ files
-*.ctxt
-
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
-
-# Package Files #
 *.jar
 *.war
 *.nar
 *.ear
-*.zip
-*.tar.gz
-*.rar
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+# Logs
+*.log
 hs_err_pid*
 replay_pid*
+
+# 2. FRONTEND — Angular / Node.js
+frontend/node_modules/
+frontend/dist/
+frontend/.angular/
+frontend/.cache/
+frontend/coverage/
+frontend/.sass-cache/
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+frontend/.env
+
+# 3. MOBILE — Android / Gradle
+mobile/.gradle/
+mobile/local.properties
+mobile/.idea/
+mobile/build/
+mobile/app/build/
+mobile/captures/
+mobile/.externalNativeBuild/
+mobile/.cxx/
+mobile/app/release/
+*.apk
+*.aab
+*.ap_
+*.dex
+*.iml
+*.hprof
+
+# 4. IDE — IntelliJ / VS Code / Eclipse / NetBeans
+.idea/
+*.iml
+*.iws
+*.ipr
+out/
+.idea_modules/
+
+.vscode/
+!.vscode/extensions.json
+!.vscode/settings.json.example
+
+.classpath
+.project
+.settings/
+bin/
+.apt_generated/
+.factorypath
+
+nbproject/private/
+nbbuild/
+dist/
+nbdist/
+.nb-gradle/
+
+# 5. OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+desktop.ini
+# 6. Env / secrets
+.env
+.env.*
+!.env.example
+*.local
+*.secret
+application-local.properties
+application-local.yml
+# 7. Divers
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
