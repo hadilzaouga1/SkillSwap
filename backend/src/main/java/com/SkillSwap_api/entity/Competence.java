@@ -25,11 +25,11 @@ public class Competence {
     @Column(nullable = false)
     private String niveau;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER) // EAGER permet de charger la catégorie direct
     @JoinColumn(name = "categorie_id", nullable = false)
     private Categorie categorie;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "etudiant_id", nullable = false)
     private Utilisateur etudiant;
 }

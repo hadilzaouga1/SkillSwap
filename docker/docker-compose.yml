@@ -7,7 +7,7 @@ services:
       POSTGRES_USER: skillswap
       POSTGRES_PASSWORD: skillswap
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - skillswap_pgdata:/var/lib/postgresql/data
     healthcheck:
