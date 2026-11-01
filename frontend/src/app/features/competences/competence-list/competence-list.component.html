@@ -1,15 +1,42 @@
 <div class="container">
   <h1>Découvrir les compétences</h1>
 
-  <p *ngIf="loading">Chargement en cours...</p>
+  <!-- Barre de recherche et filtres (US7) -->
+  <div class="filtres">
+    <input type="text" placeholder="Mot-clé (ex : anglais, python...)"
+           [(ngModel)]="filtres.motCle" (keyup.enter)="charger()" />
+
+    <select [ngModel]="filtres.categorieId" (ngModelChange)="changerCategorie($event)">
+      <option [ngValue]="null">Toutes les catégories</option>
+      <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nom }}</option>
+    </select>
+
+    <select [ngModel]="filtres.niveau" (ngModelChange)="changerNiveau($event)">
+      <option [ngValue]="''">Tous les niveaux</option>
+      <option *ngFor="let n of niveaux" [ngValue]="n.valeur">{{ n.libelle }}</option>
+    </select>
+
+    <button class="btn btn-primary" (click)="charger()">Rechercher</button>
+    <button class="btn btn-secondary" (click)="reinitialiser()">Réinitialiser</button>
+  </div>
+
+  <p *ngIf="loading" class="vide">Chargement en cours...</p>
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+  <p *ngIf="!loading && !erreur && competences.length === 0" class="vide">
+    Aucune compétence ne correspond à votre recherche.
+  </p>
 
   <div class="grid" *ngIf="!loading">
     <div class="card" *ngFor="let c of competences">
       <h3>{{ c.titre }}</h3>
       <p class="badge">{{ c.categorie.nom }}</p>
-      <p class="niveau">Niveau : {{ c.niveau }}</p>
+      <p class="niveau">Niveau : {{ c.niveau | niveau }}</p>
       <p class="description">{{ c.description }}</p>
-      <p class="etudiant">Proposé par : {{ c.etudiant.nom }}</p>
+      <p class="dispo" *ngIf="c.disponibilites">Disponibilités : {{ c.disponibilites }}</p>
+      <p class="etudiant">
+        Proposé par :
+        <a [routerLink]="['/profil', c.etudiant.id]">{{ c.etudiant.nom }}</a>
+      </p>
     </div>
   </div>
 </div>

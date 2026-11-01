@@ -1,0 +1,138 @@
+// ============================================================
+//  Thème commun SkillSwap (palette + composants réutilisables)
+//  Utilisation dans un composant :  @use '../../../shared/styles/theme';
+//  (adapter le nombre de "../" selon la profondeur du fichier)
+// ============================================================
+$vert: #5B8A72;
+$texte: #2E3A46;
+$bordure: #E2DDD5;
+$badge: #A8C4B8;
+$bleu: #6B8CAE;
+$gris: #6B7785;
+$rouge: #C0504D;
+
+.container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 20px;
+  font-family: 'Inter', sans-serif;
+  color: $texte;
+}
+
+h1 {
+  color: $vert;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+// ----- Boutons -----
+.btn {
+  display: inline-block;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.2s;
+
+  &:hover { opacity: 0.85; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+}
+.btn-primary { background: $vert; color: #fff; }
+.btn-secondary { background: #fff; color: $texte; border-color: $bordure; }
+.btn-danger { background: #fff; color: $rouge; border-color: $rouge; }
+
+// ----- Messages -----
+.erreur {
+  background: #FBEAEA;
+  color: $rouge;
+  border: 1px solid #F0C9C8;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+.succes {
+  background: #E8F3EC;
+  color: $vert;
+  border: 1px solid #C9E0D2;
+  border-radius: 8px;
+  padding: 10px 14px;
+  margin-bottom: 16px;
+}
+.vide { text-align: center; color: $gris; }
+
+// ----- Cartes de compétences -----
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #FFFFFF;
+  border: 1px solid $bordure;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+
+  &:hover { transform: translateY(-5px); }
+
+  h3 { margin-top: 0; color: $texte; }
+
+  .badge {
+    display: inline-block;
+    background: $badge;
+    color: $texte;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: bold;
+  }
+  .badge-attente { background: #F3E3B5; }
+  .badge-refusee { background: #F0C9C8; }
+
+  .niveau { font-size: 14px; color: $bleu; }
+  .description { font-size: 14px; color: $gris; }
+  .dispo { font-size: 13px; color: $gris; font-style: italic; }
+  .etudiant { font-weight: bold; font-size: 13px; margin-top: 15px; }
+  .actions { display: flex; gap: 8px; margin-top: 15px; }
+
+  a { color: $vert; }
+}
+
+// ----- Formulaires -----
+.form {
+  max-width: 560px;
+  margin: 0 auto;
+  background: #fff;
+  border: 1px solid $bordure;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+
+  label {
+    display: block;
+    font-weight: 600;
+    font-size: 14px;
+    margin: 14px 0 6px;
+  }
+
+  input, select, textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 9px 12px;
+    border: 1px solid $bordure;
+    border-radius: 8px;
+    font-size: 14px;
+    font-family: inherit;
+    color: $texte;
+  }
+
+  textarea { min-height: 110px; resize: vertical; }
+
+  .champ-erreur { color: $rouge; font-size: 12px; margin-top: 4px; }
+  .actions { display: flex; gap: 10px; margin-top: 22px; }
+}

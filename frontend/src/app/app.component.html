@@ -1,1 +1,21 @@
+<!-- Barre de navigation commune à toutes les pages -->
+<nav class="navbar">
+  <a class="logo" routerLink="/">SkillSwap</a>
+
+  <div class="liens">
+    <a routerLink="/" routerLinkActive="actif" [routerLinkActiveOptions]="{ exact: true }">Catalogue</a>
+    <a routerLink="/competences/nouvelle" routerLinkActive="actif">Publier</a>
+    <a routerLink="/mes-competences" routerLinkActive="actif">Mes compétences</a>
+    <a routerLink="/profil/moi" routerLinkActive="actif">Mon profil</a>
+  </div>
+
+  <!-- TEMPORAIRE : à supprimer quand l'authentification sera développée -->
+  <label class="simulation">
+    Connecté en tant que :
+    <select [ngModel]="session.userId" (ngModelChange)="changerUtilisateur($event)">
+      <option *ngFor="let u of session.utilisateursTest" [ngValue]="u.id">{{ u.nom }}</option>
+    </select>
+  </label>
+</nav>
+
 <router-outlet></router-outlet>

@@ -25,6 +25,16 @@ public class Utilisateur {
     private String universite;
     private String filiere;
 
-    @Column(name = "note_moyenne", columnDefinition = "NUMERIC(2,1)")
+    @Column(name = "note_moyenne")
     private Double noteMoyenne;
+
+    /** Rôle : ETUDIANT par défaut. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private Role role = Role.ETUDIANT;
+
+    /** Statut du compte : ACTIF par défaut. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private StatutCompte statut = StatutCompte.ACTIF;
 }

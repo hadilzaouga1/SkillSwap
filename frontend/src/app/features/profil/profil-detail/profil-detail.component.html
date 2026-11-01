@@ -1,0 +1,31 @@
+<div class="container">
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+
+  <ng-container *ngIf="profil">
+    <h1>{{ profil.nom }}</h1>
+
+    <div class="infos card">
+      <p><strong>Université :</strong> {{ profil.universite || 'Non renseignée' }}</p>
+      <p><strong>Filière :</strong> {{ profil.filiere || 'Non renseignée' }}</p>
+      <p>
+        <strong>Note moyenne :</strong>
+        {{ profil.noteMoyenne ? (profil.noteMoyenne | number:'1.1-1') + ' / 5' : 'Pas encore évalué' }}
+      </p>
+    </div>
+
+    <h2>Compétences proposées</h2>
+    <p *ngIf="competences.length === 0" class="vide">Aucune compétence publiée.</p>
+
+    <div class="grid">
+      <div class="card" *ngFor="let c of competences">
+        <h3>{{ c.titre }}</h3>
+        <p class="badge">{{ c.categorie.nom }}</p>
+        <p class="niveau">Niveau : {{ c.niveau | niveau }}</p>
+        <p class="description">{{ c.description }}</p>
+        <p class="dispo" *ngIf="c.disponibilites">Disponibilités : {{ c.disponibilites }}</p>
+      </div>
+    </div>
+  </ng-container>
+
+  <p style="margin-top: 30px"><a routerLink="/">← Retour au catalogue</a></p>
+</div>
