@@ -1,0 +1,25 @@
+<div class="container">
+  <h1>Compétences à valider</h1>
+
+  <p *ngIf="succes" class="succes">{{ succes }}</p>
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+  <p *ngIf="loading" class="vide">Chargement en cours...</p>
+  <p *ngIf="!loading && !erreur && competences.length === 0" class="vide">
+    Aucune compétence en attente de validation.
+  </p>
+
+  <div class="grid" *ngIf="!loading">
+    <div class="card" *ngFor="let c of competences">
+      <h3>{{ c.titre }}</h3>
+      <p class="badge">{{ c.categorie.nom }}</p>
+      <p class="niveau">Niveau : {{ c.niveau | niveau }}</p>
+      <p class="description">{{ c.description }}</p>
+      <p class="dispo" *ngIf="c.disponibilites">Disponibilités : {{ c.disponibilites }}</p>
+      <p class="etudiant">Soumise par l'étudiant n° {{ c.etudiantId ?? c.etudiant?.id }}</p>
+      <div class="actions">
+        <button class="btn btn-primary" (click)="valider(c)">Valider</button>
+        <button class="btn btn-danger" (click)="refuser(c)">Refuser</button>
+      </div>
+    </div>
+  </div>
+</div>

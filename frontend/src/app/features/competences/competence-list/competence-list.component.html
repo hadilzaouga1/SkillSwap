@@ -35,7 +35,7 @@
       <p class="dispo" *ngIf="c.disponibilites">Disponibilités : {{ c.disponibilites }}</p>
       <p class="etudiant">
         Proposé par :
-        <a [routerLink]="['/profil', c.etudiant.id]">{{ c.etudiant.nom }}</a>
+        <a [routerLink]="['/profil', idEtudiant(c)]">{{ nomEtudiant(c) }}</a>
       </p>
     </div>
   </div>

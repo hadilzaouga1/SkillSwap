@@ -19,7 +19,7 @@ export function messageErreur(err: HttpErrorResponse): string {
 
   // Récupérer le message général envoyé par le backend.
   // Si le message n'existe pas, afficher un message par défaut.
-  const message = err.error?.message ?? 'Une erreur est survenue.';
+  const message = err.error?.message ?? `Erreur ${err.status} (${err.statusText || 'sans détail'})`;
 
   // Si des détails existent, les ajouter au message général.
   // Sinon, retourner uniquement le message général.

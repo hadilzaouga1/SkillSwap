@@ -57,6 +57,7 @@ public class CompetenceService {
         c.setDisponibilites(request.disponibilites());
         c.setCategorie(categorie);
         c.setEtudiantId(etudiantId);
+        // Toute nouvelle compétence attend la validation d'un modérateur (US20)
         c.setStatutValidation(StatutValidation.EN_ATTENTE);
 
         return CompetenceResponse.depuis(competenceRepository.save(c));
@@ -78,6 +79,8 @@ public class CompetenceService {
         c.setNiveau(request.niveau());
         c.setDisponibilites(request.disponibilites());
         c.setCategorie(categorie);
+        // Une compétence modifiée doit être revalidée (sinon on pourrait modifier après validation)
+        c.setStatutValidation(StatutValidation.EN_ATTENTE);
 
         return CompetenceResponse.depuis(competenceRepository.save(c));
     }

@@ -1,0 +1,21 @@
+<div class="container">
+  <h1>Connexion</h1>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="seConnecter()">
+    <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+    <label for="email">Email universitaire</label>
+    <input id="email" type="email" formControlName="email" autocomplete="username" />
+    <p class="champ-erreur" *ngIf="invalide('email')">Saisissez un email valide.</p>
+
+    <label for="motDePasse">Mot de passe</label>
+    <input id="motDePasse" type="password" formControlName="motDePasse" autocomplete="current-password" />
+    <p class="champ-erreur" *ngIf="invalide('motDePasse')">Le mot de passe est obligatoire.</p>
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="envoiEnCours">Se connecter</button>
+    </div>
+
+    <p class="alternative">Pas encore de compte ? <a routerLink="/inscription">Inscrivez-vous</a></p>
+  </form>
+</div>

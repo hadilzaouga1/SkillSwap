@@ -1,0 +1,55 @@
+@use '../../../shared/styles/theme';
+
+// --- NOUVEAUX STYLES POUR LA VALIDATION ---
+
+// Boîte d'alerte rouge en haut du formulaire
+.alerte-globale {
+  background-color: #f8d7da;
+  color: #721c24;
+  padding: 12px 15px;
+  border-radius: 6px;
+  margin-bottom: 20px;
+  border: 1px solid #f5c6cb;
+  font-size: 14px;
+  animation: secouer 0.4s ease-in-out;
+}
+
+// Animation pour faire "trembler" l'alerte
+@keyframes secouer {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-5px); }
+  40%, 80% { transform: translateX(5px); }
+}
+
+// Style des champs en erreur
+input.invalide {
+  border: 2px solid #dc3545 !important;
+  background-color: #fff8f8 !important;
+  outline: none;
+
+  &:focus {
+    box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25);
+  }
+}
+
+// Texte d'erreur sous les champs
+.champ-erreur {
+  color: #dc3545;
+  font-size: 13px;
+  margin-top: 4px;
+  margin-bottom: 8px;
+}
+
+// --- STYLES EXISTANTS ---
+
+.alternative {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #6B7785;
+  text-align: center;
+
+  a { 
+    color: #5B8A72; 
+    font-weight: 600; 
+  }
+}

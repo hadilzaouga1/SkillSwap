@@ -1,0 +1,10 @@
+@use '../../../shared/styles/theme';
+
+.alternative {
+  margin-top: 18px;
+  font-size: 14px;
+  color: #6B7785;
+  text-align: center;
+
+  a { color: #5B8A72; font-weight: 600; }
+}

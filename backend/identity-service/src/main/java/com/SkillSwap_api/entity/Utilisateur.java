@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -29,6 +30,15 @@ public class Utilisateur {
 
     @Column(name = "note_moyenne")
     private Double noteMoyenne;
+
+    /**
+     * Mot de passe CHIFFRÉ avec BCrypt (jamais en clair, ENF1).
+     * Exclu du toString() pour ne jamais apparaître dans les logs.
+     * Aucun DTO ne le renvoie au frontend.
+     */
+    @ToString.Exclude
+    @Column(name = "mot_de_passe", length = 255)
+    private String motDePasse;
 
     /** Rôle : ETUDIANT par défaut. */
     @Enumerated(EnumType.STRING)

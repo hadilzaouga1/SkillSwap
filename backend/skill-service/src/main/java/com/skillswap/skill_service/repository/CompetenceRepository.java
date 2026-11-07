@@ -30,4 +30,7 @@ public interface CompetenceRepository extends JpaRepository<Competence, Long> {
                                 @Param("motCle") String motCle);
 
     List<Competence> findByEtudiantIdOrderByIdDesc(Long etudiantId);
+
+    /** Pour la modération : compétences d'un statut donné, les plus anciennes d'abord (US20). */
+    List<Competence> findByStatutValidationOrderByIdAsc(StatutValidation statut);
 }

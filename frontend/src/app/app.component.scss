@@ -23,6 +23,7 @@ $bordure: #E2DDD5;
     display: flex;
     gap: 18px;
     flex: 1;
+    flex-wrap: wrap;
 
     a {
       color: $texte;
@@ -36,15 +37,39 @@ $bordure: #E2DDD5;
     }
   }
 
-  .simulation {
-    font-size: 12px;
-    color: #6B7785;
+  .compte {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
 
-    select {
-      margin-left: 6px;
-      padding: 4px 8px;
-      border: 1px dashed $vert;
-      border-radius: 6px;
+    a {
+      color: $texte;
+      text-decoration: none;
+      &:hover { color: $vert; }
+      &.actif { color: $vert; font-weight: 600; }
+    }
+
+    .salut { color: #6B7785; font-size: 13px; }
+
+    .inscription {
+      background: $vert;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      &:hover { color: #fff; opacity: 0.85; }
+    }
+
+    .deconnexion {
+      background: #fff;
+      border: 1px solid $bordure;
+      color: $texte;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      &:hover { border-color: $vert; color: $vert; }
     }
   }
 }
