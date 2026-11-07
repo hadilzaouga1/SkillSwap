@@ -1,0 +1,41 @@
+<div class="container">
+  <h1>{{ modeModification ? 'Modifier ma compétence' : 'Publier une compétence' }}</h1>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="enregistrer()">
+    <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+
+    <label for="titre">Titre *</label>
+    <input id="titre" type="text" formControlName="titre" placeholder="Ex : Cours d'anglais conversationnel" />
+    <p class="champ-erreur" *ngIf="invalide('titre')">Le titre est obligatoire (120 caractères maximum).</p>
+
+    <label for="categorieId">Catégorie *</label>
+    <select id="categorieId" formControlName="categorieId">
+      <option [ngValue]="null" disabled>Choisir une catégorie</option>
+      <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nom }}</option>
+    </select>
+    <p class="champ-erreur" *ngIf="invalide('categorieId')">Choisissez une catégorie.</p>
+
+    <label for="niveau">Niveau *</label>
+    <select id="niveau" formControlName="niveau">
+      <option [ngValue]="null" disabled>Choisir un niveau</option>
+      <option *ngFor="let n of niveaux" [ngValue]="n.valeur">{{ n.libelle }}</option>
+    </select>
+    <p class="champ-erreur" *ngIf="invalide('niveau')">Choisissez un niveau.</p>
+
+    <label for="description">Description</label>
+    <textarea id="description" formControlName="description"
+              placeholder="Décrivez ce que vous proposez..."></textarea>
+    <p class="champ-erreur" *ngIf="invalide('description')">2000 caractères maximum.</p>
+
+    <label for="disponibilites">Disponibilités</label>
+    <input id="disponibilites" type="text" formControlName="disponibilites"
+           placeholder="Ex : lundi et mercredi soir" />
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="envoiEnCours">
+        {{ modeModification ? 'Enregistrer' : 'Publier' }}
+      </button>
+      <a class="btn btn-secondary" routerLink="/mes-competences">Annuler</a>
+    </div>
+  </form>
+</div>

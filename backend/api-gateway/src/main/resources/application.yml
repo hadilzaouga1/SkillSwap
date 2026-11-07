@@ -1,0 +1,41 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      routes:
+        - id: identity-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/utilisateurs,/api/utilisateurs/**
+        - id: skill-service-competences
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/competences,/api/competences/**
+        - id: skill-service-categories
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/categories,/api/categories/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - http://localhost:4200
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: '*'
+            allowCredentials: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

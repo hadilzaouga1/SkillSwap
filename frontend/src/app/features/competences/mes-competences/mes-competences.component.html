@@ -1,0 +1,34 @@
+<div class="container">
+  <h1>Mes compétences</h1>
+
+  <div class="barre">
+    <a class="btn btn-primary" routerLink="/competences/nouvelle">+ Publier une compétence</a>
+  </div>
+
+  <p *ngIf="loading" class="vide">Chargement en cours...</p>
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+  <p *ngIf="!loading && !erreur && competences.length === 0" class="vide">
+    Vous n'avez encore publié aucune compétence.
+  </p>
+
+  <div class="grid" *ngIf="!loading">
+    <div class="card" *ngFor="let c of competences">
+      <h3>{{ c.titre }}</h3>
+      <p class="badge">{{ c.categorie.nom }}</p>
+      <p class="niveau">Niveau : {{ c.niveau | niveau }}</p>
+      <p class="description">{{ c.description }}</p>
+      <p class="dispo" *ngIf="c.disponibilites">Disponibilités : {{ c.disponibilites }}</p>
+      <p>
+        <span class="badge"
+              [class.badge-attente]="c.statutValidation === 'EN_ATTENTE'"
+              [class.badge-refusee]="c.statutValidation === 'REFUSEE'">
+          {{ libelleStatut(c.statutValidation) }}
+        </span>
+      </p>
+      <div class="actions">
+        <a class="btn btn-secondary" [routerLink]="['/competences', c.id, 'modifier']">Modifier</a>
+        <button class="btn btn-danger" (click)="supprimer(c)">Supprimer</button>
+      </div>
+    </div>
+  </div>
+</div>

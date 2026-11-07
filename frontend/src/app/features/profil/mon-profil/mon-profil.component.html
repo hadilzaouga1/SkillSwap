@@ -1,0 +1,27 @@
+<div class="container">
+  <h1>Mon profil</h1>
+
+  <form class="form" [formGroup]="form" (ngSubmit)="enregistrer()">
+    <p class="erreur" *ngIf="erreur">{{ erreur }}</p>
+    <p class="succes" *ngIf="succes">{{ succes }}</p>
+
+    <label>Email universitaire</label>
+    <input type="text" [value]="email" disabled />
+
+    <label for="nom">Nom *</label>
+    <input id="nom" type="text" formControlName="nom" />
+    <p class="champ-erreur" *ngIf="form.get('nom')?.invalid && form.get('nom')?.touched">
+      Le nom est obligatoire (80 caractères maximum).
+    </p>
+
+    <label for="universite">Université</label>
+    <input id="universite" type="text" formControlName="universite" />
+
+    <label for="filiere">Filière</label>
+    <input id="filiere" type="text" formControlName="filiere" />
+
+    <div class="actions">
+      <button type="submit" class="btn btn-primary" [disabled]="envoiEnCours">Enregistrer</button>
+    </div>
+  </form>
+</div>
