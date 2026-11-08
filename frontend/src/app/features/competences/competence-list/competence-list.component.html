@@ -37,6 +37,15 @@
         Proposé par :
         <a [routerLink]="['/profil', idEtudiant(c)]">{{ nomEtudiant(c) }}</a>
       </p>
+
+      <div class="actions">
+        <a *ngIf="peutDemander(c)" class="btn btn-primary" [routerLink]="['/echanges/nouveau', c.id]">
+          Demander un échange
+        </a>
+        <a *ngIf="!auth.estConnecte" class="btn btn-secondary" routerLink="/connexion">
+          Connectez-vous pour demander un échange
+        </a>
+      </div>
     </div>
   </div>
 </div>

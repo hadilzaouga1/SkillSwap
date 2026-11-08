@@ -8,6 +8,7 @@
     <ng-container *ngIf="auth.estConnecte">
       <a routerLink="/competences/nouvelle" routerLinkActive="actif">Publier</a>
       <a routerLink="/mes-competences" routerLinkActive="actif">Mes compétences</a>
+      <a routerLink="/echanges" routerLinkActive="actif">Mes échanges</a>
       <a routerLink="/profil/moi" routerLinkActive="actif">Mon profil</a>
       <a *ngIf="auth.estModerateur" routerLink="/moderation/competences" routerLinkActive="actif">Modération</a>
     </ng-container>

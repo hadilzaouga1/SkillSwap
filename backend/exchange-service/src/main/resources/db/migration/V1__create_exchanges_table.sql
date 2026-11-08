@@ -1,0 +1,21 @@
+CREATE TABLE exchanges (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    requester_id BIGINT NOT NULL,
+    provider_id BIGINT NOT NULL,
+    skill_id BIGINT NOT NULL,
+    skill_title VARCHAR(255)  NOT NULL,
+    description VARCHAR(1000) NULL,
+    duration_hours INT NOT NULL,
+    proposed_date_time DATETIME(6) NOT NULL,
+    status VARCHAR(30) NOT NULL,
+    version BIGINT NOT NULL DEFAULT 0,
+    created_at DATETIME(6) NOT NULL,
+    updated_at DATETIME(6) NOT NULL,
+    PRIMARY KEY (id),
+    CONSTRAINT chk_exchanges_duration CHECK (duration_hours > 0),
+    CONSTRAINT chk_exchanges_distinct_users CHECK (requester_id <> provider_id),
+    INDEX idx_exchanges_requester (requester_id),
+    INDEX idx_exchanges_provider (provider_id),
+    INDEX idx_exchanges_skill (skill_id),
+    INDEX idx_exchanges_status (status)
+);

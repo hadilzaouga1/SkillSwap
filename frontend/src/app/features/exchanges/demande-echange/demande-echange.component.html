@@ -1,0 +1,48 @@
+<div class="container">
+  <h1>Demander un échange</h1>
+
+  <p *ngIf="loading" class="vide">Chargement en cours...</p>
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+
+  <ng-container *ngIf="competence">
+    <!-- Rappel de la compétence demandée -->
+    <div class="card recap">
+      <h3>{{ competence.titre }}</h3>
+      <p class="badge">{{ competence.categorie.nom }}</p>
+      <p class="niveau">Niveau : {{ competence.niveau | niveau }}</p>
+      <p class="description">{{ competence.description }}</p>
+      <p class="dispo" *ngIf="competence.disponibilites">Disponibilités : {{ competence.disponibilites }}</p>
+      <p class="etudiant" *ngIf="nomPrestataire">Proposé par : {{ nomPrestataire }}</p>
+    </div>
+
+    <form class="form" #f="ngForm" (ngSubmit)="envoyer()" *ngIf="!estMaCompetence">
+      <label for="description">Message pour le prestataire</label>
+      <textarea id="description" name="description" maxlength="1000"
+                placeholder="Ex : je voudrais apprendre les bases..."
+                [(ngModel)]="form.description"></textarea>
+
+      <label for="duree">Durée souhaitée (en heures)</label>
+      <input id="duree" name="duree" type="number" min="1" step="1" required
+             [(ngModel)]="form.durationHours" #duree="ngModel" />
+      <p class="champ-erreur" *ngIf="duree.invalid && (duree.touched || f.submitted)">
+        La durée doit être d'au moins 1 heure.
+      </p>
+
+      <label for="creneau">Créneau souhaité</label>
+      <input id="creneau" name="creneau" type="datetime-local" required [min]="minDate"
+             [(ngModel)]="form.proposedDateTime" #creneau="ngModel" />
+      <p class="champ-erreur" *ngIf="(creneau.invalid && (creneau.touched || f.submitted)) || dateInvalide">
+        Choisissez une date et une heure dans le futur.
+      </p>
+
+      <div class="actions">
+        <button type="submit" class="btn btn-primary" [disabled]="envoiEnCours || f.invalid">
+          {{ envoiEnCours ? 'Envoi...' : 'Envoyer la demande' }}
+        </button>
+        <a routerLink="/" class="btn btn-secondary">Annuler</a>
+      </div>
+    </form>
+  </ng-container>
+
+  <p style="margin-top: 30px"><a routerLink="/">← Retour au catalogue</a></p>
+</div>
