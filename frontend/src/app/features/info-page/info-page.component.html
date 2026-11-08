@@ -1,0 +1,17 @@
+<div class="max-w-3xl mx-auto py-12 animate-fade-in-up">
+  <a routerLink="/" class="inline-flex items-center gap-2 text-sm font-bold text-gray-500 hover:text-[#5B8A72] transition-colors mb-8 group">
+    <lucide-icon [img]="icons.ArrowLeft" class="w-4 h-4 group-hover:-translate-x-1 transition-transform"></lucide-icon>
+    Retour à l'accueil
+  </a>
+
+  <div class="bg-white rounded-[2rem] p-10 shadow-sm border border-gray-100">
+    <div class="w-16 h-16 rounded-2xl bg-[#5B8A72]/10 text-[#5B8A72] flex items-center justify-center mb-6">
+      <lucide-icon *ngIf="typePage === 'confidentialite'" [img]="icons.Shield" class="w-8 h-8"></lucide-icon>
+      <lucide-icon *ngIf="typePage === 'contact'" [img]="icons.Mail" class="w-8 h-8"></lucide-icon>
+      <lucide-icon *ngIf="typePage === 'conditions'" [img]="icons.FileText" class="w-8 h-8"></lucide-icon>
+    </div>
+
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-4">{{ titre }}</h1>
+    <p class="text-gray-600 leading-relaxed text-lg">{{ contenu }}</p>
+  </div>
+</div>

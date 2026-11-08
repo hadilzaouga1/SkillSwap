@@ -1,0 +1,62 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        # Évite les en-têtes CORS en double (Gateway + microservice)
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+        - id: identity-auth
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+        - id: identity-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/utilisateurs,/api/utilisateurs/**
+        - id: skill-service-competences
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/competences,/api/competences/**
+        - id: skill-service-categories
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/categories,/api/categories/**
+        - id: skill-service-moderation
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/moderation/**
+        - id: exchange-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/exchanges,/api/exchanges/**
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - http://localhost:4200
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: '*'
+            allowCredentials: true
+
+# Secret de signature des tokens JWT : DOIT être identique dans identity-service.
+# En dehors du développement, le fournir par la variable d'environnement JWT_SECRET.
+skillswap:
+  jwt:
+    secret: MaSuperCleSecreteUltraLonguePourSkillSwap2026!
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

@@ -1,0 +1,163 @@
+<div class="max-w-7xl mx-auto space-y-8 animate-fade-in-up pt-4">
+  
+  <!-- En-tête -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div>
+      <h1 class="text-4xl font-extrabold text-gray-900 tracking-tight">Espace Administrateur</h1>
+      <p class="text-gray-500 mt-2 text-lg">Gérez la plateforme SkillSwap, les utilisateurs et les demandes.</p>
+    </div>
+    <div class="flex gap-3">
+      <button class="bg-white text-gray-700 px-6 py-3 rounded-2xl font-bold border border-gray-200 hover:bg-gray-50 transition-colors shadow-sm flex items-center gap-2">
+        <lucide-icon [img]="icons.Settings" class="w-5 h-5"></lucide-icon> Paramètres
+      </button>
+    </div>
+  </div>
+
+  <!-- Cartes de Statistiques Globales -->
+  <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+    <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+      <p class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Étudiants inscrits</p>
+      <div class="flex items-end gap-3">
+        <p class="text-5xl font-extrabold text-gray-900">{{ statistiques.totalEtudiants }}</p>
+        <span class="text-sm font-bold text-green-500 bg-green-50 px-2 py-1 rounded-lg mb-2 flex items-center">
+          <lucide-icon [img]="icons.TrendingUp" class="w-4 h-4 mr-1"></lucide-icon> +12%
+        </span>
+      </div>
+    </div>
+    
+    <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm hover:shadow-md transition-shadow">
+      <p class="text-sm font-bold text-gray-400 uppercase tracking-wider mb-2">Compétences totales</p>
+      <p class="text-5xl font-extrabold text-gray-900">{{ statistiques.totalCompetences }}</p>
+    </div>
+
+    <div class="bg-orange-50 rounded-[2rem] p-8 border border-orange-100 shadow-sm hover:shadow-md transition-shadow">
+      <p class="text-sm font-bold text-orange-500 uppercase tracking-wider mb-2">En attente</p>
+      <p class="text-5xl font-extrabold text-orange-600">{{ statistiques.enAttente }}</p>
+    </div>
+
+    <div class="bg-blue-50 rounded-[2rem] p-8 border border-blue-100 shadow-sm hover:shadow-md transition-shadow">
+      <p class="text-sm font-bold text-blue-500 uppercase tracking-wider mb-2">Échanges en cours</p>
+      <p class="text-5xl font-extrabold text-blue-600">{{ statistiques.echangesEnCours }}</p>
+    </div>
+  </div>
+
+  <!-- Onglets de Navigation Interne -->
+  <div class="flex border-b border-gray-200 gap-8">
+    <button (click)="ongletActif = 'dashboard'" [class.text-primary]="ongletActif === 'dashboard'" [class.border-primary]="ongletActif === 'dashboard'"
+            class="pb-4 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-gray-900 transition-colors flex items-center gap-2">
+      <lucide-icon [img]="icons.BookOpen" class="w-4 h-4"></lucide-icon> Validation des cours
+    </button>
+    <button (click)="ongletActif = 'utilisateurs'" [class.text-primary]="ongletActif === 'utilisateurs'" [class.border-primary]="ongletActif === 'utilisateurs'"
+            class="pb-4 text-sm font-bold text-gray-500 border-b-2 border-transparent hover:text-gray-900 transition-colors flex items-center gap-2">
+      <lucide-icon [img]="icons.Users" class="w-4 h-4"></lucide-icon> Gestion des comptes
+    </button>
+  </div>
+
+  <!-- ==================== ONGLET : VALIDATION DES COURS ==================== -->
+  <div *ngIf="ongletActif === 'dashboard'" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+    <h2 class="text-2xl font-bold text-gray-900 mb-6">Compétences à valider</h2>
+    
+    <!-- Message si la liste est vide -->
+    <p *ngIf="competencesEnAttente.length === 0" class="text-gray-500 text-center py-8 bg-gray-50 rounded-2xl">
+      🎉 Tout est à jour ! Aucune compétence en attente.
+    </p>
+
+    <div class="space-y-4">
+      <!-- Boucle sur les compétences -->
+      <div *ngFor="let c of competencesEnAttente" 
+           class="flex flex-col md:flex-row md:items-center justify-between p-4 bg-gray-50 rounded-2xl border border-gray-100 gap-4 animate-fade-in">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+            <lucide-icon [img]="icons.BookOpen" class="w-6 h-6"></lucide-icon>
+          </div>
+          <div>
+            <h3 class="text-base font-bold text-gray-900">{{ c.titre }}</h3>
+            <p class="text-sm text-gray-500">Proposé par {{ c.auteur }} · {{ c.categorie }}</p>
+          </div>
+        </div>
+        <div class="flex gap-3">
+          <button (click)="demanderValidation(c.id)" 
+                  class="px-4 py-2 bg-green-500 text-white text-sm font-bold rounded-xl hover:bg-green-600 transition-colors flex items-center gap-2 shadow-sm">
+            <lucide-icon [img]="icons.CheckCircle" class="w-4 h-4"></lucide-icon> Accepter
+          </button>
+          <button (click)="demanderRefus(c.id)" 
+                  class="px-4 py-2 bg-white border border-gray-200 text-gray-700 text-sm font-bold rounded-xl hover:bg-gray-50 transition-colors flex items-center gap-2 shadow-sm">
+            <lucide-icon [img]="icons.XCircle" class="w-4 h-4"></lucide-icon> Refuser
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== ONGLET : GESTION DES COMPTES ==================== -->
+  <div *ngIf="ongletActif === 'utilisateurs'" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+    
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">Tous les utilisateurs</h2>
+      
+      <!-- Barre de recherche -->
+      <div class="relative w-64">
+        <lucide-icon [img]="icons.Search" class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"></lucide-icon>
+        <input type="text" placeholder="Rechercher un étudiant..." 
+               class="w-full pl-10 pr-4 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-primary/50" />
+      </div>
+    </div>
+
+    <!-- Tableau des utilisateurs -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="border-b border-gray-100 text-sm font-bold text-gray-500">
+            <th class="py-4 px-4">Nom</th>
+            <th class="py-4 px-4">Email</th>
+            <th class="py-4 px-4">Rôle</th>
+            <th class="py-4 px-4">Statut</th>
+            <th class="py-4 px-4 text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of utilisateurs" class="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+            <td class="py-4 px-4 font-bold text-gray-900">{{ u.nom }}</td>
+            <td class="py-4 px-4 text-gray-500">{{ u.email }}</td>
+            <td class="py-4 px-4">
+              <span [ngClass]="{
+                'bg-green-50 text-green-600': u.role === 'ETUDIANT',
+                'bg-purple-50 text-purple-600': u.role === 'MODERATEUR',
+                'bg-blue-50 text-blue-600': u.role === 'ADMIN'
+              }" class="text-xs font-bold px-3 py-1 rounded-lg">
+                {{ u.role }}
+              </span>
+            </td>
+            <td class="py-4 px-4">
+              <span [ngClass]="{
+                'text-green-500': u.statut === 'ACTIF',
+                'text-red-500': u.statut === 'SUSPENDU'
+              }" class="text-sm font-bold flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full" [ngClass]="u.statut === 'ACTIF' ? 'bg-green-500' : 'bg-red-500'"></span>
+                {{ u.statut }}
+              </span>
+            </td>
+            <td class="py-4 px-4 text-right">
+              <button *ngIf="u.statut === 'ACTIF'" (click)="demanderSuspension(u.id)" class="text-xs font-bold text-red-500 bg-red-50 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors">
+                Suspendre
+              </button>
+              <button *ngIf="u.statut === 'SUSPENDU'" (click)="demanderReactivation(u.id)" class="text-xs font-bold text-green-500 bg-green-50 px-3 py-1.5 rounded-lg hover:bg-green-100 transition-colors">
+                Réactiver
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- LA MODALE DE CONFIRMATION -->
+  <app-confirm-modal 
+    [isOpen]="modal ? modal.isOpen : false" 
+    [title]="modalTitle" 
+    [message]="modalMessage"
+    (onConfirm)="confirmerAction()" 
+    (onCancel)="fermerModale()">
+  </app-confirm-modal>
+
+</div>

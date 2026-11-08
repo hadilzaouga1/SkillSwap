@@ -1,0 +1,77 @@
+<div class="min-h-screen bg-[#F4F7F6] py-10 px-4 flex justify-center items-start">
+  <div class="w-full max-w-2xl bg-white rounded-[2rem] shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden">
+    
+    <!-- En-tête de la carte -->
+    <div class="bg-gradient-to-r from-[#5B8A72] to-[#4A725D] px-8 py-6 text-white text-center">
+      <h2 class="text-2xl font-extrabold tracking-tight">
+        {{ modeModification ? 'Modifier la compétence' : 'Publier une nouvelle compétence' }}
+      </h2>
+      <p class="text-white/80 text-sm mt-1">Partagez votre savoir avec la communauté.</p>
+    </div>
+
+    <!-- Formulaire -->
+    <form class="p-8 space-y-6" [formGroup]="form" (ngSubmit)="enregistrer()">
+      
+      <p *ngIf="erreur" class="bg-red-50 text-red-500 p-4 rounded-xl text-sm font-medium text-center border border-red-100">{{ erreur }}</p>
+
+      <!-- Titre -->
+      <div class="relative">
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Titre de la compétence *</label>
+        <input type="text" formControlName="titre" 
+               placeholder="Ex : Cours d'Anglais conversationnel"
+               class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block w-full p-3 transition-colors outline-none" />
+        <p class="text-red-500 text-xs mt-1" *ngIf="invalide('titre')">Le titre est obligatoire.</p>
+      </div>
+
+      <!-- Catégorie & Niveau (sur 2 colonnes) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="text-sm font-bold text-gray-700 mb-2 block">Catégorie *</label>
+          <select formControlName="categorieId" 
+                  class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none cursor-pointer">
+            <option [ngValue]="null" disabled>Choisir...</option>
+            <option *ngFor="let cat of categories" [ngValue]="cat.id">{{ cat.nom }}</option>
+          </select>
+          <p class="text-red-500 text-xs mt-1" *ngIf="invalide('categorieId')">Champ requis.</p>
+        </div>
+
+        <div>
+          <label class="text-sm font-bold text-gray-700 mb-2 block">Niveau *</label>
+          <select formControlName="niveau" 
+                  class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none cursor-pointer">
+            <option [ngValue]="null" disabled>Choisir...</option>
+            <option *ngFor="let n of niveaux" [ngValue]="n.valeur">{{ n.libelle }}</option>
+          </select>
+          <p class="text-red-500 text-xs mt-1" *ngIf="invalide('niveau')">Champ requis.</p>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Description</label>
+        <textarea formControlName="description" rows="4" 
+                  placeholder="Décrivez ce que vous proposez, ce que l'élève va apprendre..."
+                  class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none resize-none"></textarea>
+      </div>
+
+      <!-- Disponibilités -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Disponibilités</label>
+        <input type="text" formControlName="disponibilites" 
+               placeholder="Ex : Lundi et Mercredi soir, Weekend..."
+               class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none" />
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="pt-4 flex items-center justify-end gap-4 border-t border-gray-100">
+        <a routerLink="/mes-competences" class="px-6 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-colors">
+          Annuler
+        </a>
+        <button type="submit" [disabled]="envoiEnCours" 
+                class="px-8 py-3 bg-[#5B8A72] hover:bg-[#4A725D] text-white text-sm font-bold rounded-xl shadow-lg shadow-[#5B8A72]/30 transition-all flex items-center gap-2 disabled:opacity-50">
+          {{ envoiEnCours ? 'Enregistrement...' : 'Publier la compétence' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

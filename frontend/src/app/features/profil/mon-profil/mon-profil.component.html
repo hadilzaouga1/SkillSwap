@@ -1,0 +1,81 @@
+<div class="max-w-4xl mx-auto space-y-8 pb-12 animate-fade-in-up">
+  
+  <!-- En-tête / Bannière -->
+  <div class="bg-white rounded-[2rem] shadow-sm border border-gray-100 overflow-hidden">
+    <div class="h-32 bg-gradient-to-r from-[#5B8A72] to-[#4A725D]"></div>
+    
+    <div class="px-8 pb-8">
+      <div class="flex justify-between items-end -mt-12 mb-6">
+        <div class="relative">
+          <div class="w-24 h-24 rounded-full bg-white p-1 shadow-lg">
+            <div class="w-full h-full rounded-full bg-gray-100 flex items-center justify-center text-[#5B8A72] text-3xl font-extrabold border-4 border-white">
+              {{ profil?.nom?.charAt(0) || 'U' }}
+            </div>
+          </div>
+        </div>
+        <span class="bg-green-50 text-green-600 text-xs font-bold px-3 py-1 rounded-lg mb-2">
+          Étudiant
+        </span>
+      </div>
+
+      <h1 class="text-3xl font-extrabold text-gray-900">{{ profil?.nom || 'Mon Profil' }}</h1>
+      <p class="text-gray-500 mt-1">{{ profil?.email }}</p>
+    </div>
+  </div>
+
+  <!-- Formulaire de modification -->
+  <div class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100">
+    <h2 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+      <span class="w-8 h-8 rounded-lg bg-[#5B8A72]/10 text-[#5B8A72] flex items-center justify-center">✏️</span>
+      Modifier mes informations
+    </h2>
+
+    <form [formGroup]="form" (ngSubmit)="enregistrer()" class="space-y-6">
+      
+      <!-- Email (non modifiable) -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Email universitaire</label>
+        <input type="email" [value]="profil?.email" disabled 
+               class="w-full bg-gray-50 border border-gray-200 text-gray-400 text-sm rounded-xl p-3 cursor-not-allowed" />
+      </div>
+
+      <!-- Nom -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Nom complet *</label>
+        <input type="text" formControlName="nom" 
+               class="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none" />
+      </div>
+
+      <!-- Université & Filière -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <label class="text-sm font-bold text-gray-700 mb-2 block">Université</label>
+          <input type="text" formControlName="universite" 
+                 class="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none" />
+        </div>
+        <div>
+          <label class="text-sm font-bold text-gray-700 mb-2 block">Filière</label>
+          <input type="text" formControlName="filiere" 
+                 class="w-full bg-white border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none" />
+        </div>
+      </div>
+
+      <!-- Note moyenne (affichage) -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Note moyenne</label>
+        <div class="flex items-center gap-2">
+          <span class="text-2xl font-extrabold text-yellow-500">★ {{ profil?.noteMoyenne || '0.0' }}</span>
+          <span class="text-sm text-gray-400">/ 5.0</span>
+        </div>
+      </div>
+
+      <!-- Bouton -->
+      <div class="pt-4 border-t border-gray-100 flex justify-end">
+        <button type="submit" [disabled]="envoiEnCours" 
+                class="px-8 py-3 bg-[#2E3A46] hover:bg-gray-900 text-white text-sm font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 disabled:opacity-50">
+          {{ envoiEnCours ? 'Enregistrement...' : 'Enregistrer les modifications' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

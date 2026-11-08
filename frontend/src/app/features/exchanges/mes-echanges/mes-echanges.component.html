@@ -1,0 +1,124 @@
+<div class="max-w-5xl mx-auto space-y-8 animate-fade-in-up">
+  
+  <!-- En-tête -->
+  <div>
+    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Mes échanges</h1>
+    <p class="text-gray-500 mt-2 text-lg">Suivez vos demandes envoyées et reçues.</p>
+  </div>
+
+  <!-- Onglets -->
+  <div class="flex bg-white p-2 rounded-2xl border border-gray-100 shadow-sm w-fit">
+    <button (click)="choisirOnglet('recues')" 
+            [ngClass]="onglet === 'recues' ? 'bg-[#5B8A72] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'"
+            class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+      Demandes reçues 
+      <span [ngClass]="onglet === 'recues' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'" 
+            class="px-2 py-0.5 rounded-lg text-xs">{{ recues.length }}</span>
+    </button>
+    <button (click)="choisirOnglet('envoyees')" 
+            [ngClass]="onglet === 'envoyees' ? 'bg-[#5B8A72] text-white shadow-md' : 'text-gray-500 hover:bg-gray-50'"
+            class="px-6 py-2.5 rounded-xl font-bold text-sm transition-all flex items-center gap-2">
+      Demandes envoyées
+      <span [ngClass]="onglet === 'envoyees' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-500'" 
+            class="px-2 py-0.5 rounded-lg text-xs">{{ envoyees.length }}</span>
+    </button>
+  </div>
+
+  <!-- Messages -->
+  <p *ngIf="succes" class="bg-green-50 text-green-600 p-4 rounded-2xl font-medium border border-green-100">{{ succes }}</p>
+  <p *ngIf="erreur" class="bg-red-50 text-red-600 p-4 rounded-2xl font-medium border border-red-100">{{ erreur }}</p>
+  
+  <p *ngIf="loading" class="text-center text-gray-500 py-10">Chargement de vos échanges...</p>
+
+  <!-- Aucun échange -->
+  <div *ngIf="!loading && liste.length === 0" class="bg-white rounded-[2rem] p-12 text-center border border-dashed border-gray-300 shadow-sm">
+    <div class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">📭</div>
+    <h3 class="text-xl font-bold text-gray-900 mb-1">Aucun échange pour le moment</h3>
+    <p class="text-gray-500 mb-6">
+      {{ onglet === 'recues' ? 'Vous n\'avez reçu aucune demande.' : 'Vous n\'avez envoyé aucune demande.' }}
+    </p>
+    <a routerLink="/competences" class="inline-block bg-[#5B8A72] text-white px-6 py-3 rounded-xl font-bold hover:bg-[#4A725D] transition-colors shadow-lg shadow-[#5B8A72]/30">
+      Parcourir le catalogue
+    </a>
+  </div>
+
+  <!-- Liste des échanges -->
+  <div class="space-y-4" *ngIf="!loading">
+    <div *ngFor="let e of liste" 
+         class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-lg transition-all flex flex-col md:flex-row justify-between gap-6">
+      
+      <!-- Infos principales -->
+      <div class="flex-1 space-y-3">
+        <div class="flex items-center gap-3">
+          <h3 class="text-xl font-bold text-gray-900">{{ e.skillTitle }}</h3>
+          <span [ngClass]="{
+            'bg-yellow-50 text-yellow-600 border-yellow-200': e.status === 'PENDING',
+            'bg-blue-50 text-blue-600 border-blue-200': e.status === 'ACCEPTED' || e.status === 'TIME_PROPOSED',
+            'bg-green-50 text-green-600 border-green-200': e.status === 'COMPLETED',
+            'bg-red-50 text-red-600 border-red-200': e.status === 'REJECTED' || e.status === 'CANCELLED'
+          }" class="text-xs font-bold px-3 py-1 rounded-lg border">
+            {{ libelle(e.status) }}
+          </span>
+        </div>
+
+        <div class="text-sm text-gray-500 flex items-center gap-4 bg-gray-50 p-2 rounded-lg w-fit">
+          <span>⏱ {{ e.durationHours }} heures</span>
+          <span>📅 {{ e.proposedDateTime | date:'dd/MM/yyyy à HH:mm' }}</span>
+        </div>
+
+        <p *ngIf="e.description" class="text-sm text-gray-600 italic bg-gray-50 p-3 rounded-xl border border-gray-100">
+          "{{ e.description }}"
+        </p>
+
+        <div class="flex items-center gap-2 text-sm font-medium text-gray-700 pt-2">
+          <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">{{ nom(interlocuteurId(e)).charAt(0) }}</span>
+          {{ onglet === 'recues' ? 'Demandé par' : 'Prestataire' }} : <span class="text-[#5B8A72] font-bold">{{ nom(interlocuteurId(e)) }}</span>
+        </div>
+      </div>
+
+      <!-- Actions (selon le rôle et le statut) -->
+      <div class="flex flex-col justify-center gap-2 min-w-[180px] border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
+        <p *ngIf="aide(e)" class="text-xs font-medium text-gray-400 mb-2 text-center">{{ aide(e) }}</p>
+
+        <!-- Prestataire : Accepter/Refuser -->
+        <ng-container *ngIf="estPrestataire(e) && e.status === 'PENDING'">
+          <button (click)="accepter(e)" class="w-full bg-[#5B8A72] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#4A725D] transition-colors shadow-sm">
+            Accepter
+          </button>
+          <button (click)="refuser(e)" class="w-full bg-red-50 text-red-600 text-sm font-bold py-2.5 rounded-xl hover:bg-red-100 transition-colors border border-red-100">
+            Refuser
+          </button>
+        </ng-container>
+
+        <!-- Demandeur : Accepter le nouveau créneau -->
+        <button *ngIf="estDemandeur(e) && e.status === 'TIME_PROPOSED'" 
+                (click)="accepterCreneau(e)" 
+                class="w-full bg-blue-500 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-blue-600 transition-colors shadow-sm">
+          Accepter le nouveau créneau
+        </button>
+
+        <!-- Prestataire : Terminer la séance -->
+        <button *ngIf="estPrestataire(e) && e.status === 'ACCEPTED'" 
+                (click)="terminer(e)" 
+                class="w-full bg-gray-900 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-gray-800 transition-colors shadow-sm">
+          Déclarer terminée
+        </button>
+
+        <!-- Demandeur : Confirmer -->
+        <button *ngIf="estDemandeur(e) && e.status === 'AWAITING_CONFIRMATION'" 
+                (click)="confirmer(e)" 
+                class="w-full bg-green-500 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-green-600 transition-colors shadow-sm">
+          Confirmer la réalisation
+        </button>
+
+        <!-- Annuler -->
+        <button *ngIf="peutAnnuler(e)" 
+                (click)="annuler(e)" 
+                class="w-full bg-white text-gray-500 text-sm font-medium py-2 hover:text-red-500 transition-colors">
+          Annuler l'échange
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

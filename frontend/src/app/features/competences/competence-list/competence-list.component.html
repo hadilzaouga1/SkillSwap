@@ -1,0 +1,55 @@
+<div class="space-y-8">
+  <!-- En-tête -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div>
+      <h1 class="text-3xl font-extrabold text-gray-900">Découvrir les compétences</h1>
+      <p class="text-gray-500 mt-2">Trouvez la personne qui pourra vous aider.</p>
+    </div>
+  </div>
+
+  <!-- Barre de recherche -->
+  <div class="bg-white p-4 rounded-[2rem] shadow-sm border border-gray-100 flex flex-wrap gap-4 items-center">
+    <div class="flex-1 min-w-[250px] relative">
+      <lucide-icon [img]="icons.Search" class="absolute left-4 top-3.5 w-5 h-5 text-gray-400"></lucide-icon>
+      <input type="text" placeholder="Rechercher un mot-clé (ex: Python)..." 
+             class="w-full pl-12 pr-4 py-3 rounded-xl bg-gray-50 border-none focus:ring-2 focus:ring-primary/50 text-gray-700 font-medium placeholder-gray-400"
+             [(ngModel)]="filtres.motCle" (keyup.enter)="charger()" />
+    </div>
+    <button (click)="charger()" class="bg-primary text-white px-8 py-3 rounded-xl font-bold hover:bg-primary-dark transition-colors shadow-lg shadow-primary/30">
+      Rechercher
+    </button>
+  </div>
+
+  <!-- Grille des compétences -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let c of competences" 
+         class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 group cursor-pointer flex flex-col">
+      
+      <div class="flex justify-between items-start mb-4">
+        <span class="bg-primary/10 text-primary text-xs font-bold px-3 py-1.5 rounded-lg">{{ c.categorie.nom }}</span>
+        <span class="text-xs font-bold text-gray-400 bg-gray-50 px-2 py-1 rounded-md">{{ c.niveau }}</span>
+      </div>
+      
+      <h3 class="text-xl font-bold text-gray-900 mb-2 group-hover:text-primary transition-colors">{{ c.titre }}</h3>
+      <p class="text-sm text-gray-500 mb-6 line-clamp-2 flex-1">{{ c.description || 'Aucune description fournie.' }}</p>
+      
+      <div class="flex items-center justify-between pt-4 border-t border-gray-50 mt-auto">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-gray-600 font-bold shadow-inner">
+            {{ nomEtudiant(c).charAt(0) }}
+          </div>
+          <div>
+            <p class="text-sm font-bold text-gray-900">{{ nomEtudiant(c) }}</p>
+            <p class="text-xs text-gray-400">Étudiant</p>
+          </div>
+        </div>
+        <a [routerLink]="['/echanges/nouveau', c.id]" 
+           class="w-10 h-10 rounded-full bg-primary/10 text-primary flex items-center justify-center hover:bg-primary hover:text-white transition-colors">
+          <lucide-icon [img]="icons.ArrowRight" class="w-5 h-5"></lucide-icon>
+        </a>
+      </div>
+    </div>
+  </div>
+  
+  <p *ngIf="competences.length === 0" class="text-center text-gray-500 py-10">Aucune compétence trouvée.</p>
+</div>
