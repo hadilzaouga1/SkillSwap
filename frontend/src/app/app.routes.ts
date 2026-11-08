@@ -13,7 +13,8 @@ import { InscriptionComponent } from './features/auth/inscription/inscription.co
 import { CompetencesAValiderComponent } from './features/moderation/competences-a-valider/competences-a-valider.component';
 import { DemandeEchangeComponent } from './features/exchanges/demande-echange/demande-echange.component';
 import { MesEchangesComponent } from './features/exchanges/mes-echanges/mes-echanges.component';
-import { InfoPageComponent } from './features/info-page/info-page.component'; 
+import { InfoPageComponent } from './features/info-page/info-page.component';
+import { MesCreditsComponent } from './features/credits/mes-credits/mes-credits.component'; 
 
 // L'import qui manquait pour l'admin
 import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-dashboard.component';
@@ -47,6 +48,7 @@ export const routes: Routes = [
       // Échanges
       { path: 'echanges/nouveau/:skillId', component: DemandeEchangeComponent, canActivate: [authGuard] },
       { path: 'echanges', component: MesEchangesComponent, canActivate: [authGuard] },
+      { path: 'credits', component: MesCreditsComponent, canActivate: [authGuard] },
       
       // Modération (Réservé aux modérateurs)
       { 

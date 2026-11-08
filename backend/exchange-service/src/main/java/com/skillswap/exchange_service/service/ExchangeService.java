@@ -1,5 +1,8 @@
 package com.skillswap.exchange_service.service;
 
+import com.skillswap.exchange_service.client.CreditAvailabilityDto;
+import com.skillswap.exchange_service.client.CreditClient;
+import com.skillswap.exchange_service.client.HoldRequest;
 import com.skillswap.exchange_service.client.SkillClient;
 import com.skillswap.exchange_service.client.SkillDto;
 import com.skillswap.exchange_service.dto.ExchangeRequest;
@@ -11,6 +14,7 @@ import com.skillswap.exchange_service.exception.ApiException;
 import com.skillswap.exchange_service.repository.ExchangeRepository;
 import feign.FeignException;
 import org.springframework.http.HttpStatus;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +26,6 @@ import static com.skillswap.exchange_service.enums.ExchangeStatus.*;
 @Service
 public class ExchangeService {
 
-    // Statuts pour lesquels une demande est considérée "en cours" (anti-doublon)
     private static final List<ExchangeStatus> ACTIVE_STATUSES =
             List.of(PENDING, TIME_PROPOSED, ACCEPTED, AWAITING_CONFIRMATION);
 
@@ -30,16 +33,20 @@ public class ExchangeService {
 
     private final ExchangeRepository exchangeRepository;
     private final SkillClient skillClient;
+    private final CreditClient creditClient;
 
-    public ExchangeService(ExchangeRepository exchangeRepository, SkillClient skillClient) {
+    public ExchangeService(ExchangeRepository exchangeRepository,
+                           SkillClient skillClient,
+                           CreditClient creditClient) {
         this.exchangeRepository = exchangeRepository;
         this.skillClient = skillClient;
+        this.creditClient = creditClient;
     }
 
     // ------------------------------------------------------------------ création
 
-    // Volontairement sans @Transactional : l'appel HTTP vers skill-service ne doit pas
-    // garder une connexion SQL ouverte. Le save() a sa propre transaction.
+    // Volontairement sans @Transactional : les appels HTTP vers skill-service et credit-service
+    // ne doivent pas garder une connexion SQL ouverte. Le save() a sa propre transaction.
     public ExchangeResponse create(ExchangeRequest request, Long requesterId) {
         SkillDto skill = fetchSkill(request.skillId());
 
@@ -60,9 +67,12 @@ public class ExchangeService {
                     "Vous avez déjà une demande en cours pour cette compétence");
         }
 
+        // Vérification préalable (optionnelle mais évite un appel HTTP inutile si solde vide)
+        requireEnoughCredits(requesterId, request.durationHours());
+
         Exchange e = new Exchange();
         e.setRequesterId(requesterId);
-        e.setProviderId(skill.etudiantId());          // déduit de la compétence, jamais de la requête
+        e.setProviderId(skill.etudiantId());
         e.setSkillId(skill.id());
         e.setSkillTitle(truncate(skill.titre(), 255));
         e.setDescription(request.description());
@@ -70,7 +80,24 @@ public class ExchangeService {
         e.setProposedDateTime(request.proposedDateTime());
         e.setStatus(PENDING);
 
-        return ExchangeResponse.from(exchangeRepository.save(e));
+        // 1. On sauvegarde l'échange en base pour générer son ID
+        Exchange saved = exchangeRepository.saveAndFlush(e);
+
+        // 2. ON BLOQUE LES CRÉDITS IMMÉDIATEMENT
+        try {
+            creditClient.reserve(new HoldRequest(
+                    saved.getId(), saved.getRequesterId(), saved.getProviderId(), saved.getDurationHours()));
+        } catch (FeignException.Conflict ex) {
+            // Si les crédits ont été dépensés entre-temps, on annule la demande
+            exchangeRepository.delete(saved);
+            throw new ApiException(HttpStatus.CONFLICT,
+                    "Le demandeur n'a plus assez de crédits disponibles pour cet échange");
+        } catch (FeignException ex) {
+            exchangeRepository.delete(saved);
+            throw creditServiceUnavailable();
+        }
+
+        return ExchangeResponse.from(saved);
     }
 
     // -------------------------------------------------------------- consultation
@@ -98,21 +125,24 @@ public class ExchangeService {
 
     // ------------------------------------------------------------------ workflow
 
-    @Transactional
     public ExchangeResponse accept(Long id, Long userId) {
         Exchange e = load(id);
         requireProvider(e, userId, "Seul le prestataire peut accepter cette demande");
         requireStatus(e, "accepter", PENDING);
+
+        // Les crédits sont déjà bloqués à la création. On change juste le statut.
         e.setStatus(ACCEPTED);
-        // TODO (credit-service) : réserver les crédits du demandeur à l'acceptation
         return save(e);
     }
 
-    @Transactional
     public ExchangeResponse reject(Long id, Long userId) {
         Exchange e = load(id);
         requireProvider(e, userId, "Seul le prestataire peut refuser cette demande");
         requireStatus(e, "refuser", PENDING);
+
+        // ON LIBÈRE LES CRÉDITS BLOQUÉS
+        releaseCredits(e.getId());
+
         e.setStatus(REJECTED);
         return save(e);
     }
@@ -127,30 +157,30 @@ public class ExchangeService {
         return save(e);
     }
 
-    // Le demandeur accepte le nouveau créneau proposé par le prestataire
-    @Transactional
     public ExchangeResponse acceptProposal(Long id, Long userId) {
         Exchange e = load(id);
         requireRequester(e, userId, "Seul le demandeur peut accepter le nouveau créneau");
         requireStatus(e, "accepter le nouveau créneau", TIME_PROPOSED);
+
+        // Les crédits sont déjà bloqués.
         e.setStatus(ACCEPTED);
-        // TODO (credit-service) : réserver les crédits du demandeur à l'acceptation
         return save(e);
     }
 
-    @Transactional
     public ExchangeResponse cancel(Long id, Long userId) {
         Exchange e = load(id);
         if (!isParticipant(e, userId)) {
             throw new ApiException(HttpStatus.FORBIDDEN, "Seuls les participants peuvent annuler cet échange");
         }
         requireStatus(e, "annuler", PENDING, TIME_PROPOSED, ACCEPTED);
+
+        // Comme les crédits sont bloqués dès PENDING, on les libère dans TOUS les cas d'annulation
+        releaseCredits(e.getId());
+
         e.setStatus(CANCELLED);
-        // TODO (credit-service) : libérer les crédits réservés si l'échange était ACCEPTED
         return save(e);
     }
 
-    // Le prestataire déclare la séance terminée
     @Transactional
     public ExchangeResponse complete(Long id, Long userId) {
         Exchange e = load(id);
@@ -160,15 +190,53 @@ public class ExchangeService {
         return save(e);
     }
 
-    // Le demandeur confirme que la séance a bien eu lieu
-    @Transactional
     public ExchangeResponse confirm(Long id, Long userId) {
         Exchange e = load(id);
         requireRequester(e, userId, "Seul le demandeur peut confirmer la réalisation");
         requireStatus(e, "confirmer", AWAITING_CONFIRMATION);
+
+        transferCredits(e.getId());
         e.setStatus(COMPLETED);
-        // TODO (credit-service) : déclencher le transfert des crédits vers le prestataire
         return save(e);
+    }
+
+    // ------------------------------------------------------------ crédits (credit-service)
+
+    private void requireEnoughCredits(Long userId, Integer needed) {
+        CreditAvailabilityDto availability;
+        try {
+            availability = creditClient.getAvailability(userId);
+        } catch (FeignException ex) {
+            throw creditServiceUnavailable();
+        }
+        if (availability.available() < needed) {
+            throw new ApiException(HttpStatus.CONFLICT, "Solde insuffisant : " + availability.available()
+                    + " crédit(s) disponible(s), " + needed + " nécessaire(s)");
+        }
+    }
+
+    private void releaseCredits(Long exchangeId) {
+        try {
+            creditClient.release(exchangeId);
+        } catch (FeignException ex) {
+            throw creditServiceUnavailable();
+        }
+    }
+
+    private void transferCredits(Long exchangeId) {
+        try {
+            creditClient.transfer(exchangeId);
+        } catch (FeignException.NotFound ex) {
+            throw new ApiException(HttpStatus.CONFLICT,
+                    "Aucun crédit n'a été bloqué pour cet échange : transfert impossible");
+        } catch (FeignException ex) {
+            throw creditServiceUnavailable();
+        }
+    }
+
+    private ApiException creditServiceUnavailable() {
+        return new ApiException(HttpStatus.SERVICE_UNAVAILABLE,
+                "credit-service est indisponible, veuillez réessayer plus tard");
     }
 
     // ------------------------------------------------------------------- helpers
@@ -189,9 +257,13 @@ public class ExchangeService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Échange introuvable"));
     }
 
-    // saveAndFlush : applique @PreUpdate et le contrôle de version avant de construire la réponse
     private ExchangeResponse save(Exchange e) {
-        return ExchangeResponse.from(exchangeRepository.saveAndFlush(e));
+        try {
+            return ExchangeResponse.from(exchangeRepository.saveAndFlush(e));
+        } catch (ObjectOptimisticLockingFailureException ex) {
+            throw new ApiException(HttpStatus.CONFLICT,
+                    "Cet échange vient d'être modifié par une autre action, rechargez la page");
+        }
     }
 
     private boolean isParticipant(Exchange e, Long userId) {
