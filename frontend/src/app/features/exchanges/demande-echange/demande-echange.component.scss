@@ -1,0 +1,8 @@
+@use '../../../shared/styles/theme';
+
+.recap {
+  max-width: 560px;
+  margin: 0 auto 24px;
+
+  &:hover { transform: none; }
+}

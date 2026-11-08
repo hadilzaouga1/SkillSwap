@@ -1,0 +1,74 @@
+<div class="container">
+  <h1>Mes échanges</h1>
+
+  <p *ngIf="succes" class="succes">{{ succes }}</p>
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+
+  <div class="onglets">
+    <button type="button" [class.actif]="onglet === 'recues'" (click)="choisirOnglet('recues')">
+      Demandes reçues ({{ recues.length }})
+    </button>
+    <button type="button" [class.actif]="onglet === 'envoyees'" (click)="choisirOnglet('envoyees')">
+      Demandes envoyées ({{ envoyees.length }})
+    </button>
+  </div>
+
+  <p *ngIf="loading" class="vide">Chargement en cours...</p>
+  <p *ngIf="!loading && liste.length === 0" class="vide">
+    {{ onglet === 'recues' ? 'Vous n\'avez reçu aucune demande.' : 'Vous n\'avez envoyé aucune demande.' }}
+    <ng-container *ngIf="onglet === 'envoyees'"> <a routerLink="/">Parcourir le catalogue</a></ng-container>
+  </p>
+
+  <div class="liste" *ngIf="!loading">
+    <div class="card echange" *ngFor="let e of liste">
+      <div class="entete">
+        <h3>{{ e.skillTitle }}</h3>
+        <span class="statut" [ngClass]="classeStatut(e.status)">{{ libelle(e.status) }}</span>
+      </div>
+
+      <p class="meta">
+        {{ onglet === 'recues' ? 'Demandé par' : 'Prestataire' }} :
+        <a [routerLink]="['/profil', interlocuteurId(e)]">{{ nom(interlocuteurId(e)) }}</a>
+      </p>
+      <p class="meta">Durée : {{ e.durationHours }} h · Créneau : {{ e.proposedDateTime | date:'dd/MM/yyyy HH:mm' }}</p>
+      <p class="description" *ngIf="e.description">« {{ e.description }} »</p>
+      <p class="aide" *ngIf="aide(e)">{{ aide(e) }}</p>
+
+      <div class="actions">
+        <!-- Prestataire : répondre à une nouvelle demande -->
+        <ng-container *ngIf="estPrestataire(e) && e.status === 'PENDING'">
+          <button class="btn btn-primary" [disabled]="enCours === e.id" (click)="accepter(e)">Accepter</button>
+          <button class="btn btn-danger" [disabled]="enCours === e.id" (click)="refuser(e)">Refuser</button>
+          <button class="btn btn-secondary" [disabled]="enCours === e.id" (click)="ouvrirProposition(e)">Proposer un autre créneau</button>
+        </ng-container>
+
+        <!-- Demandeur : répondre au nouveau créneau -->
+        <button *ngIf="estDemandeur(e) && e.status === 'TIME_PROPOSED'" class="btn btn-primary"
+                [disabled]="enCours === e.id" (click)="accepterCreneau(e)">Accepter le nouveau créneau</button>
+
+        <!-- Prestataire : déclarer la fin -->
+        <button *ngIf="estPrestataire(e) && e.status === 'ACCEPTED'" class="btn btn-primary"
+                [disabled]="enCours === e.id" (click)="terminer(e)">Déclarer la séance terminée</button>
+
+        <!-- Demandeur : confirmer -->
+        <button *ngIf="estDemandeur(e) && e.status === 'AWAITING_CONFIRMATION'" class="btn btn-primary"
+                [disabled]="enCours === e.id" (click)="confirmer(e)">Confirmer la réalisation</button>
+
+        <!-- Les deux participants : annuler -->
+        <button *ngIf="peutAnnuler(e)" class="btn btn-danger"
+                [disabled]="enCours === e.id" (click)="annuler(e)">Annuler</button>
+      </div>
+
+      <!-- Formulaire de proposition d'un autre créneau -->
+      <div class="proposition" *ngIf="propositionOuverte === e.id">
+        <label for="creneau-{{ e.id }}">Nouveau créneau</label>
+        <input id="creneau-{{ e.id }}" type="datetime-local" [min]="minDate" [(ngModel)]="nouveauCreneau" />
+        <p class="champ-erreur" *ngIf="creneauInvalide">Choisissez une date et une heure dans le futur.</p>
+        <div class="actions">
+          <button class="btn btn-primary" (click)="envoyerProposition(e)">Envoyer</button>
+          <button class="btn btn-secondary" (click)="fermerProposition()">Fermer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

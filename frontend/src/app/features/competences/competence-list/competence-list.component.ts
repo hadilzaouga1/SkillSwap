@@ -5,6 +5,7 @@ import { RouterLink } from '@angular/router';
 import { CompetenceService } from '../../../core/services/competence.service';
 import { CategorieService } from '../../../core/services/categorie.service';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Competence, FiltresCompetence, NIVEAUX } from '../../../core/models/competence.model';
 import { Categorie } from '../../../core/models/categorie.model';
 import { NiveauPipe } from '../../../shared/pipes/niveau.pipe';
@@ -41,7 +42,8 @@ export class CompetenceListComponent implements OnInit {
   constructor(
     private competenceService: CompetenceService,
     private categorieService: CategorieService,
-    private utilisateurService: UtilisateurService
+    private utilisateurService: UtilisateurService,
+    public auth: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -89,6 +91,11 @@ export class CompetenceListComponent implements OnInit {
   /** Id de l'étudiant qui propose la compétence. */
   idEtudiant(c: Competence): number | undefined {
     return c.etudiant?.id ?? c.etudiantId;
+  }
+
+  /** Le bouton "Demander un échange" n'apparaît que pour une personne connectée, sur la compétence d'un autre. */
+  peutDemander(c: Competence): boolean {
+    return this.auth.estConnecte && this.idEtudiant(c) !== this.auth.utilisateur?.id;
   }
 
   /** Nom affiché dans "Proposé par". */

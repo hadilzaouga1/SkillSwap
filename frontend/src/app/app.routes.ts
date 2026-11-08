@@ -8,6 +8,8 @@ import { MonProfilComponent } from './features/profil/mon-profil/mon-profil.comp
 import { ConnexionComponent } from './features/auth/connexion/connexion.component';
 import { InscriptionComponent } from './features/auth/inscription/inscription.component';
 import { CompetencesAValiderComponent } from './features/moderation/competences-a-valider/competences-a-valider.component';
+import { DemandeEchangeComponent } from './features/exchanges/demande-echange/demande-echange.component';
+import { MesEchangesComponent } from './features/exchanges/mes-echanges/mes-echanges.component';
 
 /**
  * Table des routes.
@@ -26,6 +28,10 @@ export const routes: Routes = [
   { path: 'mes-competences', component: MesCompetencesComponent, canActivate: [authGuard] },
   { path: 'profil/moi', component: MonProfilComponent, canActivate: [authGuard] },
   { path: 'profil/:id', component: ProfilDetailComponent },
+
+  // Échanges (exchange-service) : 'echanges/nouveau/:skillId' est une route précise, avant tout paramètre
+  { path: 'echanges/nouveau/:skillId', component: DemandeEchangeComponent, canActivate: [authGuard] },
+  { path: 'echanges', component: MesEchangesComponent, canActivate: [authGuard] },
 
   { path: 'moderation/competences', component: CompetencesAValiderComponent,
     canActivate: [roleGuard('MODERATEUR', 'ADMIN')] },
