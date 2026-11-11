@@ -1,0 +1,73 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: api-gateway
+  cloud:
+    gateway:
+      default-filters:
+        - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+      routes:
+        - id: identity-auth
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/auth/**
+        - id: identity-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/utilisateurs,/api/utilisateurs/**
+        - id: skill-service-competences
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/competences,/api/competences/**
+        - id: skill-service-categories
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/categories,/api/categories/**
+        - id: skill-service-moderation
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/moderation/**
+        - id: exchange-service
+          uri: http://localhost:8082
+          predicates:
+            - Path=/api/exchanges,/api/exchanges/**
+        - id: credit-service
+          uri: http://localhost:8086
+          predicates:
+            - Path=/api/credits/**
+        - id: session-service
+          uri: http://localhost:8087
+          predicates:
+            - Path=/api/sessions/**
+          filters:
+            - StripPrefix=0
+
+        - id: admin-service
+          uri: http://localhost:8081
+          predicates:
+            - Path=/api/admin/**
+
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:4200"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - PATCH
+              - DELETE
+              - OPTIONS
+            allowedHeaders: "*"
+            allowCredentials: true
+
+skillswap:
+  jwt:
+    secret: MaSuperCleSecreteUltraLonguePourSkillSwap2026!
+
+logging:
+  level:
+    org.springframework.cloud.gateway: TRACE

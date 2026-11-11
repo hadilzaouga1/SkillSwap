@@ -1,0 +1,227 @@
+<div class="max-w-4xl mx-auto space-y-6 animate-fade-in-up" *ngIf="!loading || data">
+
+  <a routerLink="/echanges" class="text-sm font-bold text-[#5B8A72] hover:underline">← Retour à mes échanges</a>
+
+  <p *ngIf="loading" class="text-center text-gray-500 py-10">Chargement de la séance...</p>
+  <p *ngIf="succes" class="bg-green-50 text-green-700 p-4 rounded-2xl font-medium border border-green-100">{{ succes }}</p>
+  <p *ngIf="erreur" class="bg-red-50 text-red-600 p-4 rounded-2xl font-medium border border-red-100">{{ erreur }}</p>
+
+  <ng-container *ngIf="data as d">
+    <ng-container *ngIf="!erreur || d.exchange">
+
+      <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-4">
+        <div class="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p class="text-xs font-bold uppercase tracking-wider text-[#5B8A72]">Fiche de séance · Échange n°{{ d.exchange.id }}</p>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mt-1">{{ d.session.title || d.exchange.skillTitle }}</h1>
+            <p *ngIf="d.session.summary" class="text-gray-500 mt-2 text-lg">{{ d.session.summary }}</p>
+          </div>
+          <button *ngIf="d.canEdit && !edition" (click)="ouvrirEdition()"
+                  class="bg-[#5B8A72] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#4A725D] shadow-lg shadow-[#5B8A72]/30">
+            {{ d.exists ? 'Modifier la fiche' : 'Décrire la séance' }}
+          </button>
+        </div>
+
+        <div class="flex flex-wrap gap-2 text-xs font-bold">
+          <span class="px-3 py-1 rounded-lg bg-gray-50 text-gray-600 border border-gray-100">{{ d.role === 'PROVIDER' ? 'Vous êtes le prestataire' : d.role === 'REQUESTER' ? 'Vous êtes le demandeur' : 'Vue modérateur (lecture seule)' }}</span>
+          <span *ngIf="d.exchange.durationHours" class="px-3 py-1 rounded-lg bg-gray-50 text-gray-600 border border-gray-100">⏱ {{ d.exchange.durationHours }} h</span>
+          <span *ngIf="d.exchange.proposedDateTime" class="px-3 py-1 rounded-lg bg-gray-50 text-gray-600 border border-gray-100">📅 {{ d.exchange.proposedDateTime | date:'dd/MM/yyyy à HH:mm' }}</span>
+          <span *ngIf="d.session.format" class="px-3 py-1 rounded-lg bg-[#5B8A72]/10 text-[#4A725D]">{{ libelleFormat(d.session.format) }}</span>
+          <span *ngIf="d.session.mode" class="px-3 py-1 rounded-lg bg-blue-50 text-blue-600">{{ libelleMode(d.session.mode) }}</span>
+          <span *ngIf="d.session.level" class="px-3 py-1 rounded-lg bg-amber-50 text-amber-700">{{ libelleNiveau(d.session.level) }}</span>
+        </div>
+
+        <div>
+          <div class="flex justify-between text-xs font-bold text-gray-500 mb-1">
+            <span>Fiche complétée à</span><span>{{ d.completeness.percent }} %</span>
+          </div>
+          <div class="h-2.5 rounded-full bg-gray-100 overflow-hidden">
+            <div class="h-full rounded-full bg-[#5B8A72] transition-all" [style.width.%]="d.completeness.percent"></div>
+          </div>
+          <p *ngIf="d.completeness.missing.length" class="text-xs text-gray-400 mt-2">À compléter : {{ d.completeness.missing.join(' · ') }}</p>
+        </div>
+      </div>
+
+      <form *ngIf="edition" (ngSubmit)="enregistrer()" #f="ngForm"
+            class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-6">
+        <h2 class="text-xl font-extrabold text-gray-900">Décrire la séance</h2>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Titre *
+            <input name="title" [(ngModel)]="form.title" required minlength="3" maxlength="160"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal focus:ring-2 focus:ring-[#5B8A72]/40 outline-none">
+          </label>
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Résumé en une phrase
+            <input name="summary" [(ngModel)]="form.summary" maxlength="300"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none focus:ring-2 focus:ring-[#5B8A72]/40">
+          </label>
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Description complète : de quoi parle le cours ?
+            <textarea name="description" [(ngModel)]="form.description" rows="5" maxlength="4000"
+                      class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none focus:ring-2 focus:ring-[#5B8A72]/40"></textarea>
+          </label>
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Objectifs (un par ligne)
+            <textarea name="objectifs" [(ngModel)]="objectifsTexte" rows="3" placeholder="Comprendre les contrôleurs&#10;Écrire un test"
+                      class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none focus:ring-2 focus:ring-[#5B8A72]/40"></textarea>
+          </label>
+        </div>
+
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <h3 class="font-bold text-gray-700 text-sm">Programme de la séance</h3>
+            <button type="button" (click)="ajouterEtape()" class="text-sm font-bold text-[#5B8A72] hover:underline">+ Ajouter une étape</button>
+          </div>
+          <div *ngFor="let e of form.outline; let i = index" class="grid gap-2 md:grid-cols-[1fr_100px_auto] items-center bg-gray-50 p-3 rounded-xl">
+            <input [name]="'et-t' + i" [(ngModel)]="e.title" placeholder="Titre de l'étape" maxlength="120"
+                   class="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none">
+            <input [name]="'et-m' + i" type="number" min="5" max="480" [(ngModel)]="e.minutes" placeholder="min"
+                   class="rounded-lg border border-gray-200 px-3 py-2 text-sm outline-none">
+            <button type="button" (click)="retirerEtape(i)" class="text-gray-400 hover:text-red-500 text-sm font-bold px-2">Retirer</button>
+          </div>
+        </div>
+
+        <div class="grid gap-5 md:grid-cols-2">
+          <label class="block text-sm font-bold text-gray-700">À qui s'adresse-t-elle ?
+            <input name="audience" [(ngModel)]="form.audience" maxlength="300"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          <label class="block text-sm font-bold text-gray-700">Prérequis
+            <input name="prerequisites" [(ngModel)]="form.prerequisites" maxlength="500"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          <label class="block text-sm font-bold text-gray-700">Niveau
+            <select name="level" [(ngModel)]="form.level" class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal bg-white">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let n of niveaux" [value]="n[0]">{{ n[1] }}</option>
+            </select></label>
+          <label class="block text-sm font-bold text-gray-700">Langue
+            <input name="language" [(ngModel)]="form.language" maxlength="40"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          <label class="block text-sm font-bold text-gray-700">Format
+            <select name="format" [(ngModel)]="form.format" class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal bg-white">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let x of formats" [value]="x[0]">{{ x[1] }}</option>
+            </select></label>
+          <label class="block text-sm font-bold text-gray-700">Mode de déroulement
+            <select name="mode" [(ngModel)]="form.mode" class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal bg-white">
+              <option [ngValue]="null">—</option>
+              <option *ngFor="let x of modes" [value]="x[0]">{{ x[1] }}</option>
+            </select></label>
+          <label class="block text-sm font-bold text-gray-700">Plateforme (Meet, Zoom, Teams…)
+            <input name="platform" [(ngModel)]="form.platform" maxlength="80"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          <label class="block text-sm font-bold text-gray-700">Lien de la réunion
+            <input name="meetingLink" type="url" [(ngModel)]="form.meetingLink" placeholder="https://…"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Lieu (si présentiel)
+            <input name="location" [(ngModel)]="form.location" maxlength="200" placeholder="Bibliothèque, salle 12…"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Comment la séance sera dispensée
+            <textarea name="deliveryNotes" [(ngModel)]="form.deliveryNotes" rows="3" maxlength="2000"
+                      placeholder="Partage d'écran, exercices en direct, questions à la fin…"
+                      class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></textarea></label>
+          <label class="md:col-span-2 block text-sm font-bold text-gray-700">Matériel à prévoir
+            <input name="materials" [(ngModel)]="form.materials" maxlength="800"
+                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+        </div>
+
+        <div class="flex gap-3 justify-end">
+          <button type="button" *ngIf="d.exists" (click)="annulerEdition()" class="px-5 py-2.5 rounded-xl font-bold text-sm text-gray-500 hover:bg-gray-50">Annuler</button>
+          <button type="submit" [disabled]="f.invalid || enCours"
+                  class="bg-[#5B8A72] text-white px-6 py-2.5 rounded-xl font-bold text-sm hover:bg-[#4A725D] disabled:opacity-50">
+            {{ enCours ? 'Enregistrement…' : 'Enregistrer la fiche' }}
+          </button>
+        </div>
+      </form>
+
+      <ng-container *ngIf="!edition">
+        <div *ngIf="!d.exists && d.role !== 'PROVIDER'" class="bg-white rounded-[2rem] p-8 border border-dashed border-gray-300 text-center text-gray-500">
+          Le prestataire n'a pas encore décrit cette séance. Vous pouvez déjà y ajouter des supports.
+        </div>
+
+        <div *ngIf="d.session.description || d.session.objectives.length" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-5">
+          <div *ngIf="d.session.description">
+            <h2 class="text-lg font-extrabold text-gray-900 mb-2">À propos du cours</h2>
+            <p class="text-gray-600 whitespace-pre-line leading-relaxed">{{ d.session.description }}</p>
+          </div>
+          <div *ngIf="d.session.objectives.length">
+            <h3 class="font-bold text-gray-900 mb-2">Objectifs</h3>
+            <ul class="space-y-1.5">
+              <li *ngFor="let o of d.session.objectives" class="flex gap-2 text-gray-600"><span class="text-[#5B8A72] font-bold">✓</span>{{ o }}</li>
+            </ul>
+          </div>
+        </div>
+
+        <div *ngIf="d.session.outline.length" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+          <div class="flex justify-between items-baseline mb-4">
+            <h2 class="text-lg font-extrabold text-gray-900">Programme</h2>
+            <span *ngIf="dureeTotale" class="text-xs font-bold text-gray-400">{{ dureeTotale }} min au total</span>
+          </div>
+          <ol class="space-y-3">
+            <li *ngFor="let e of d.session.outline; let i = index" class="flex items-center gap-4 bg-gray-50 rounded-xl p-3">
+              <span class="w-8 h-8 shrink-0 rounded-full bg-[#5B8A72] text-white font-bold text-sm flex items-center justify-center">{{ i + 1 }}</span>
+              <span class="flex-1 font-medium text-gray-800">{{ e.title }}</span>
+              <span *ngIf="e.minutes" class="text-xs font-bold text-gray-400">{{ e.minutes }} min</span>
+            </li>
+          </ol>
+        </div>
+
+        <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+          <h2 class="text-lg font-extrabold text-gray-900 mb-4">Public et déroulement</h2>
+          <dl class="grid gap-x-8 gap-y-4 md:grid-cols-2 text-sm">
+            <div><dt class="font-bold text-gray-400 uppercase text-xs">Public visé</dt><dd class="text-gray-700 mt-0.5">{{ d.session.audience || '—' }}</dd></div>
+            <div><dt class="font-bold text-gray-400 uppercase text-xs">Prérequis</dt><dd class="text-gray-700 mt-0.5">{{ d.session.prerequisites || '—' }}</dd></div>
+            <div><dt class="font-bold text-gray-400 uppercase text-xs">Langue</dt><dd class="text-gray-700 mt-0.5">{{ d.session.language || '—' }}</dd></div>
+            <div><dt class="font-bold text-gray-400 uppercase text-xs">Matériel</dt><dd class="text-gray-700 mt-0.5">{{ d.session.materials || '—' }}</dd></div>
+            <div><dt class="font-bold text-gray-400 uppercase text-xs">Plateforme</dt><dd class="text-gray-700 mt-0.5">{{ d.session.platform || '—' }}</dd></div>
+            <div><dt class="font-bold text-gray-400 uppercase text-xs">Lieu</dt><dd class="text-gray-700 mt-0.5">{{ d.session.location || '—' }}</dd></div>
+            <div class="md:col-span-2" *ngIf="d.session.meetingLink">
+              <dt class="font-bold text-gray-400 uppercase text-xs">Lien de la réunion</dt>
+              <dd class="mt-0.5"><a [href]="d.session.meetingLink" target="_blank" rel="noopener noreferrer" class="text-[#5B8A72] font-bold hover:underline break-all">{{ d.session.meetingLink }}</a></dd>
+            </div>
+            <div class="md:col-span-2" *ngIf="d.session.deliveryNotes">
+              <dt class="font-bold text-gray-400 uppercase text-xs">Comment la séance sera dispensée</dt>
+              <dd class="text-gray-700 mt-0.5 whitespace-pre-line">{{ d.session.deliveryNotes }}</dd>
+            </div>
+          </dl>
+        </div>
+      </ng-container>
+
+      <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-5">
+        <h2 class="text-lg font-extrabold text-gray-900">Supports de la séance <span class="text-gray-400 font-bold text-sm">({{ d.resources.length }})</span></h2>
+
+        <p *ngIf="!d.resources.length" class="text-gray-400 text-sm">Aucun support pour le moment.</p>
+
+        <ul class="space-y-3">
+          <li *ngFor="let s of d.resources" class="flex items-center gap-4 bg-gray-50 rounded-2xl p-4">
+            <span class="w-11 h-11 shrink-0 rounded-xl flex items-center justify-center text-xl"
+                  [ngClass]="s.kind === 'PDF' ? 'bg-red-50' : 'bg-blue-50'">{{ s.kind === 'PDF' ? '📄' : '🔗' }}</span>
+            <div class="flex-1 min-w-0">
+              <p class="font-bold text-gray-900 truncate">{{ s.title }}</p>
+              <p class="text-xs text-gray-400 truncate">
+                <ng-container *ngIf="s.kind === 'PDF'">PDF · {{ s.fileName }} · {{ taille(s.size) }}</ng-container>
+                <ng-container *ngIf="s.kind === 'LINK'">{{ s.host }}</ng-container>
+                <ng-container *ngIf="s.description"> — {{ s.description }}</ng-container>
+              </p>
+            </div>
+            <button *ngIf="s.kind === 'PDF'" (click)="ouvrirPdf(s)" class="text-sm font-bold text-[#5B8A72] hover:underline">Ouvrir</button>
+            <a *ngIf="s.kind === 'LINK'" [href]="s.url" target="_blank" rel="noopener noreferrer" class="text-sm font-bold text-[#5B8A72] hover:underline">Ouvrir</a>
+            <button *ngIf="peutSupprimer(s)" (click)="supprimer(s)" class="text-sm text-gray-400 hover:text-red-500 font-bold">Supprimer</button>
+          </li>
+        </ul>
+
+        <div *ngIf="d.canAddResources" class="grid gap-5 md:grid-cols-2 pt-4 border-t border-gray-100">
+          <form (ngSubmit)="ajouterPdf()" class="space-y-2">
+            <h3 class="font-bold text-sm text-gray-700">Ajouter un PDF (10 Mo max)</h3>
+            <input type="file" accept="application/pdf,.pdf" (change)="choisirPdf($event)" class="block w-full text-sm text-gray-500 file:mr-3 file:rounded-lg file:border-0 file:bg-[#5B8A72]/10 file:px-3 file:py-2 file:font-bold file:text-[#4A725D]">
+            <input name="pdfTitre" [(ngModel)]="pdfTitre" placeholder="Titre du document" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none">
+            <button type="submit" [disabled]="!pdfFichier || enCours" class="bg-[#5B8A72] text-white px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50">Téléverser</button>
+          </form>
+          <form (ngSubmit)="ajouterLien()" class="space-y-2">
+            <h3 class="font-bold text-sm text-gray-700">Ajouter un lien</h3>
+            <input name="lienTitre" [(ngModel)]="lienTitre" required placeholder="Titre" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none">
+            <input name="lienUrl" type="url" [(ngModel)]="lienUrl" required placeholder="https://…" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm outline-none">
+            <button type="submit" [disabled]="!lienTitre.trim() || !lienUrl.trim()" class="bg-gray-900 text-white px-4 py-2 rounded-xl font-bold text-sm disabled:opacity-50">Ajouter le lien</button>
+          </form>
+        </div>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>

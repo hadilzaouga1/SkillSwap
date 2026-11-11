@@ -1,0 +1,38 @@
+<div class="container">
+  <h1>Mes crédits</h1>
+
+  <p *ngIf="erreur" class="erreur">{{ erreur }}</p>
+
+  <!-- Solde : 1 crédit = 1 heure -->
+  <div class="soldes" *ngIf="solde">
+    <div class="carte principale">
+      <span class="valeur">{{ solde.available }}</span>
+      <span class="libelle">crédit(s) disponible(s)</span>
+    </div>
+    <div class="carte">
+      <span class="valeur">{{ solde.reserved }}</span>
+      <span class="libelle">bloqué(s) pour des échanges acceptés</span>
+    </div>
+    <div class="carte">
+      <span class="valeur">{{ solde.balance }}</span>
+      <span class="libelle">au total</span>
+    </div>
+  </div>
+
+  <h2>Historique</h2>
+  <p *ngIf="loading" class="vide">Chargement en cours...</p>
+  <p *ngIf="!loading && !erreur && transactions.length === 0" class="vide">Aucun mouvement pour le moment.</p>
+
+  <ul class="historique" *ngIf="!loading && transactions.length > 0">
+    <li *ngFor="let t of transactions">
+      <div class="infos">
+        <strong>{{ libelle(t.type) }}</strong>
+        <span class="description">{{ t.description }}</span>
+        <span class="date">{{ t.createdAt | date:'dd/MM/yyyy HH:mm' }}</span>
+      </div>
+      <span class="montant" [ngClass]="classe(t.type)">{{ signe(t.type) }}{{ t.amount }}</span>
+    </li>
+  </ul>
+
+  <p class="retour"><a routerLink="/echanges">← Mes échanges</a></p>
+</div>

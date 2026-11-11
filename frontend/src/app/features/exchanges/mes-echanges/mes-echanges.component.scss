@@ -1,0 +1,84 @@
+@use '../../../shared/styles/theme';
+
+$vert: #5B8A72;
+$bordure: #E2DDD5;
+$texte: #2E3A46;
+$gris: #6B7785;
+$rouge: #C0504D;
+
+.onglets {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-bottom: 24px;
+
+  button {
+    padding: 9px 18px;
+    border: 1px solid $bordure;
+    border-radius: 20px;
+    background: #fff;
+    color: $texte;
+    font-size: 14px;
+    cursor: pointer;
+
+    &.actif { background: $vert; color: #fff; border-color: $vert; font-weight: 600; }
+  }
+}
+
+.liste {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.echange {
+  &:hover { transform: none; }
+
+  .entete {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+
+    h3 { margin: 0; }
+  }
+
+  .meta { font-size: 14px; color: $gris; margin: 6px 0; }
+  .aide { font-size: 13px; font-style: italic; color: $gris; }
+  .actions { flex-wrap: wrap; }
+}
+
+.statut {
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 700;
+  background: #E2DDD5;
+  color: $texte;
+
+  &.statut-pending { background: #F3E3B5; }
+  &.statut-time-proposed { background: #D6E2F0; }
+  &.statut-accepted { background: #C9E0D2; }
+  &.statut-awaiting-confirmation { background: #E4D6F0; }
+  &.statut-completed { background: $vert; color: #fff; }
+  &.statut-rejected { background: #F0C9C8; color: $rouge; }
+  &.statut-cancelled { background: #E2DDD5; color: $gris; }
+}
+
+.proposition {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px dashed $bordure;
+
+  label { display: block; font-weight: 600; font-size: 14px; margin-bottom: 6px; }
+
+  input {
+    padding: 9px 12px;
+    border: 1px solid $bordure;
+    border-radius: 8px;
+    font-size: 14px;
+  }
+
+  .champ-erreur { color: $rouge; font-size: 12px; margin-top: 4px; }
+}

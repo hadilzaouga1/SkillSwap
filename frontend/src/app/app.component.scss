@@ -1,0 +1,75 @@
+$vert: #5B8A72;
+$texte: #2E3A46;
+$bordure: #E2DDD5;
+
+.navbar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  padding: 12px 28px;
+  background: #fff;
+  border-bottom: 1px solid $bordure;
+  font-family: 'Inter', sans-serif;
+  flex-wrap: wrap;
+
+  .logo {
+    font-size: 20px;
+    font-weight: 700;
+    color: $vert;
+    text-decoration: none;
+  }
+
+  .liens {
+    display: flex;
+    gap: 18px;
+    flex: 1;
+    flex-wrap: wrap;
+
+    a {
+      color: $texte;
+      text-decoration: none;
+      font-size: 14px;
+      padding-bottom: 4px;
+      border-bottom: 2px solid transparent;
+
+      &:hover { color: $vert; }
+      &.actif { color: $vert; border-bottom-color: $vert; font-weight: 600; }
+    }
+  }
+
+  .compte {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 14px;
+
+    a {
+      color: $texte;
+      text-decoration: none;
+      &:hover { color: $vert; }
+      &.actif { color: $vert; font-weight: 600; }
+    }
+
+    .salut { color: #6B7785; font-size: 13px; }
+
+    .inscription {
+      background: $vert;
+      color: #fff;
+      padding: 7px 14px;
+      border-radius: 8px;
+      font-weight: 600;
+      &:hover { color: #fff; opacity: 0.85; }
+    }
+
+    .deconnexion {
+      background: #fff;
+      border: 1px solid $bordure;
+      color: $texte;
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      &:hover { border-color: $vert; color: $vert; }
+    }
+  }
+}

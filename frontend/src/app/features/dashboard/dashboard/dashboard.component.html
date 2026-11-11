@@ -1,0 +1,89 @@
+<div class="space-y-8 animate-fade-in-up">
+  
+  <!-- En-tête -->
+  <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+    <div>
+      <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Tableau de bord</h1>
+      <p class="text-gray-500 mt-2 text-lg">Voici un aperçu de votre activité sur SkillSwap.</p>
+    </div>
+    <a routerLink="/competences/nouvelle" 
+       class="bg-gray-900 text-white px-6 py-3.5 rounded-2xl font-bold hover:bg-gray-800 transition-all shadow-xl shadow-gray-300 flex items-center gap-2 hover:-translate-y-1">
+      <lucide-icon [img]="icons.BookOpen" class="w-5 h-5"></lucide-icon>
+      Publier une compétence
+    </a>
+  </div>
+
+  <!-- Cartes de Statistiques (Design Pastel) -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+    <!-- Carte 1 (Jaune) -->
+    <div class="bg-gradient-to-br from-[#FFF9E6] to-[#FFEBB0] rounded-[2rem] p-8 border border-[#FFEBB0] relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+      <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/40 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative z-10">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-[#D4A017]">
+          <lucide-icon [img]="icons.BookOpen" class="w-7 h-7"></lucide-icon>
+        </div>
+        <p class="text-gray-700 font-semibold">Compétences publiées</p>
+        <div class="flex items-end gap-3 mt-2">
+          <p class="text-5xl font-extrabold text-gray-900">12</p>
+          <span class="text-sm font-bold text-[#D4A017] flex items-center mb-2 bg-white/60 px-2 py-1 rounded-lg">
+            <lucide-icon [img]="icons.ArrowUpRight" class="w-4 h-4 mr-1"></lucide-icon> +2
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 2 (Rose) -->
+    <div class="bg-gradient-to-br from-[#FDF2F8] to-[#FBCFE8] rounded-[2rem] p-8 border border-[#FBCFE8] relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+      <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/40 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative z-10">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-[#DB2777]">
+          <lucide-icon [img]="icons.RefreshCw" class="w-7 h-7"></lucide-icon>
+        </div>
+        <p class="text-gray-700 font-semibold">Échanges en cours</p>
+        <div class="flex items-end gap-3 mt-2">
+          <p class="text-5xl font-extrabold text-gray-900">3</p>
+          <span class="text-sm font-bold text-[#DB2777] flex items-center mb-2 bg-white/60 px-2 py-1 rounded-lg">
+            <lucide-icon [img]="icons.ArrowUpRight" class="w-4 h-4 mr-1"></lucide-icon> +1
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Carte 3 (Bleu) -->
+    <div class="bg-gradient-to-br from-[#EFF6FF] to-[#BFDBFE] rounded-[2rem] p-8 border border-[#BFDBFE] relative overflow-hidden group hover:shadow-xl transition-all duration-300">
+      <div class="absolute -right-6 -top-6 w-32 h-32 bg-white/40 rounded-full group-hover:scale-150 transition-transform duration-500"></div>
+      <div class="relative z-10">
+        <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-sm mb-6 text-[#2563EB]">
+          <lucide-icon [img]="icons.Clock" class="w-7 h-7"></lucide-icon>
+        </div>
+        <p class="text-gray-700 font-semibold">Crédits disponibles</p>
+        <div class="flex items-end gap-3 mt-2">
+          <p class="text-5xl font-extrabold text-gray-900">12h</p>
+          <span class="text-sm font-bold text-[#2563EB] flex items-center mb-2 bg-white/60 px-2 py-1 rounded-lg">
+            <lucide-icon [img]="icons.ArrowDownRight" class="w-4 h-4 mr-1"></lucide-icon> -1h
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activité Récente -->
+  <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold text-gray-900">Activité Récente</h2>
+      <a href="#" class="text-sm font-bold text-primary hover:underline">Voir tout</a>
+    </div>
+    <div class="space-y-4">
+      <div class="flex items-center p-5 bg-gray-50 rounded-2xl hover:bg-gray-100 transition-colors border border-transparent hover:border-gray-200">
+        <div class="w-14 h-14 bg-white text-green-500 rounded-full flex items-center justify-center mr-6 shadow-sm border border-gray-100">
+          <lucide-icon [img]="icons.Check" class="w-7 h-7"></lucide-icon>
+        </div>
+        <div class="flex-1">
+          <p class="text-base font-bold text-gray-900">Demande d'échange acceptée</p>
+          <p class="text-sm text-gray-500 mt-1">Roua a accepté votre demande pour "Cours d'Anglais".</p>
+        </div>
+        <span class="text-xs font-bold text-gray-500 bg-white px-4 py-2 rounded-xl border border-gray-200 shadow-sm">Il y a 2h</span>
+      </div>
+    </div>
+  </div>
+</div>

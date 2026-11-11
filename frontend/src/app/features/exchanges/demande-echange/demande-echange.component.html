@@ -1,0 +1,81 @@
+<div class="max-w-3xl mx-auto space-y-8 animate-fade-in-up">
+  
+  <!-- En-tête -->
+  <div>
+    <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Demander un échange</h1>
+    <p class="text-gray-500 mt-2 text-lg">Proposez un créneau à <span class="font-bold text-primary">{{ nomPrestataire || 'l\'étudiant' }}</span>.</p>
+  </div>
+
+  <p *ngIf="loading" class="text-center text-gray-500 py-10">Chargement...</p>
+
+  <!-- Carte de rappel de la compétence -->
+  <div *ngIf="competence" class="bg-white rounded-[2rem] p-6 border border-gray-100 shadow-sm flex items-start gap-4">
+    <div class="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center text-2xl">
+      📚
+    </div>
+    <div>
+      <h2 class="text-xl font-bold text-gray-900">{{ competence.titre }}</h2>
+      <div class="flex items-center gap-3 mt-1 text-sm text-gray-500">
+        <span class="bg-gray-100 px-2 py-0.5 rounded-md font-medium">{{ competence.categorie.nom }}</span>
+        <span class="text-xs font-bold uppercase tracking-wider">{{ competence.niveau }}</span>
+      </div>
+      <p *ngIf="competence.description" class="text-sm text-gray-500 mt-2 line-clamp-2">{{ competence.description }}</p>
+    </div>
+  </div>
+
+  <p *ngIf="erreur" class="bg-red-50 text-red-600 p-4 rounded-2xl font-medium border border-red-100">{{ erreur }}</p>
+
+  <!-- Formulaire -->
+  <form *ngIf="competence && !estMaCompetence" class="bg-white rounded-[2rem] p-8 shadow-sm border border-gray-100 space-y-6" #f="ngForm" (ngSubmit)="envoyer()">
+    
+    <!-- Message -->
+    <div>
+      <label class="text-sm font-bold text-gray-700 mb-2 block">Message pour le prestataire</label>
+      <textarea name="description" rows="4" maxlength="1000" [(ngModel)]="form.description"
+                placeholder="Expliquez ce que vous aimeriez apprendre..."
+                class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-4 transition-colors outline-none resize-none"></textarea>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Durée -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Durée (en heures) *</label>
+        <div class="relative">
+          <input type="number" name="duree" min="1" step="1" required [(ngModel)]="form.durationHours" #duree="ngModel"
+                 class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-3 pr-12 transition-colors outline-none font-bold" />
+          <span class="absolute right-4 top-3.5 text-gray-400 text-sm font-medium">heures</span>
+        </div>
+        <p class="text-red-500 text-xs mt-1" *ngIf="duree.invalid && (duree.touched || f.submitted)">Minimum 1 heure.</p>
+      </div>
+
+      <!-- Créneau -->
+      <div>
+        <label class="text-sm font-bold text-gray-700 mb-2 block">Créneau souhaité *</label>
+        <input type="datetime-local" name="creneau" required [min]="minDate" [(ngModel)]="form.proposedDateTime" #creneau="ngModel"
+               class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-3 transition-colors outline-none" />
+        <p class="text-red-500 text-xs mt-1" *ngIf="(creneau.invalid && (creneau.touched || f.submitted)) || dateInvalide">
+          Choisissez une date future.
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="pt-4 border-t border-gray-100 flex items-center justify-end gap-4">
+      <a routerLink="/competences" class="px-6 py-3 text-sm font-bold text-gray-500 hover:bg-gray-100 rounded-xl transition-colors">
+        Annuler
+      </a>
+      <button type="submit" [disabled]="envoiEnCours || f.invalid"
+              class="px-8 py-3 bg-[#2E3A46] hover:bg-gray-900 text-white text-sm font-bold rounded-xl shadow-lg transition-all flex items-center gap-2 disabled:opacity-50">
+        {{ envoiEnCours ? 'Envoi...' : 'Envoyer la demande' }}
+      </button>
+    </div>
+  </form>
+
+  <!-- Message si on essaie de demander sa propre compétence -->
+  <div *ngIf="estMaCompetence" class="bg-orange-50 border border-orange-100 text-orange-600 p-6 rounded-2xl text-center">
+    <p class="font-bold mb-2">C'est votre propre compétence !</p>
+    <p class="text-sm">Vous ne pouvez pas demander un échange sur une compétence que vous avez publiée.</p>
+    <a routerLink="/competences" class="inline-block mt-4 bg-white text-orange-600 px-6 py-2 rounded-xl font-bold shadow-sm border border-orange-200">Retour au catalogue</a>
+  </div>
+
+</div>

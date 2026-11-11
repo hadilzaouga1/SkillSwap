@@ -1,0 +1,137 @@
+<div class="flex h-screen bg-background overflow-hidden">
+  
+  <!-- SIDEBAR -->
+  <aside [class.w-72]="isSidebarOpen" [class.w-20]="!isSidebarOpen" 
+         class="bg-surface border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out shadow-sm z-30">
+    
+    <!-- Logo -->
+    <div class="h-20 flex items-center px-6 border-b border-gray-100">
+      <div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-xl shadow-lg shadow-primary/30 flex-shrink-0">
+        S
+      </div>
+      <span *ngIf="isSidebarOpen" class="ml-4 text-2xl font-extrabold text-gray-900 tracking-tight">SkillSwap</span>
+    </div>
+
+    <!-- Menu -->
+    <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden">
+      <p *ngIf="isSidebarOpen" class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Menu Principal</p>
+      
+      <a routerLink="/dashboard" routerLinkActive="bg-primary/10 text-primary" 
+         [routerLinkActiveOptions]="{exact: true}"
+         class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 font-medium hover:bg-gray-50 hover:text-primary transition-all duration-200 group">
+        <lucide-icon [img]="icons.LayoutDashboard" class="w-6 h-6 group-hover:scale-110 transition-transform"></lucide-icon>
+        <span *ngIf="isSidebarOpen" class="whitespace-nowrap">Tableau de bord</span>
+      </a>
+
+      <a routerLink="/competences" routerLinkActive="bg-primary/10 text-primary" 
+         class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 font-medium hover:bg-gray-50 hover:text-primary transition-all duration-200 group">
+        <lucide-icon [img]="icons.Search" class="w-6 h-6 group-hover:scale-110 transition-transform"></lucide-icon>
+        <span *ngIf="isSidebarOpen" class="whitespace-nowrap">Découvrir</span>
+      </a>
+
+      <a *ngIf="auth.estConnecte" routerLink="/mes-competences" routerLinkActive="bg-primary/10 text-primary" 
+         class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 font-medium hover:bg-gray-50 hover:text-primary transition-all duration-200 group">
+        <lucide-icon [img]="icons.BookOpen" class="w-6 h-6 group-hover:scale-110 transition-transform"></lucide-icon>
+        <span *ngIf="isSidebarOpen" class="whitespace-nowrap">Mes compétences</span>
+      </a>
+
+      <a *ngIf="auth.estConnecte" routerLink="/echanges" routerLinkActive="bg-primary/10 text-primary" 
+         class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 font-medium hover:bg-gray-50 hover:text-primary transition-all duration-200 group">
+        <lucide-icon [img]="icons.RefreshCw" class="w-6 h-6 group-hover:scale-110 transition-transform"></lucide-icon>
+        <span *ngIf="isSidebarOpen" class="whitespace-nowrap">Mes échanges</span>
+      </a>
+
+      <!-- SECTION ADMINISTRATION -->
+      <div *ngIf="auth.estModerateur" class="pt-4">
+        <p *ngIf="isSidebarOpen" class="px-4 text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Administration</p>
+        
+        <!-- Lien Modération -->
+        <a routerLink="/moderation/competences" routerLinkActive="bg-orange-50 text-orange-600" 
+           class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 font-medium hover:bg-orange-50 hover:text-orange-600 transition-all duration-200 group">
+          <lucide-icon [img]="icons.Shield" class="w-6 h-6 group-hover:scale-110 transition-transform"></lucide-icon>
+          <span *ngIf="isSidebarOpen" class="whitespace-nowrap">Modération</span>
+        </a>
+
+        <!-- Lien Admin (visible seulement si rôle = ADMIN) -->
+        <a *ngIf="auth.role === 'ADMIN'" routerLink="/admin" routerLinkActive="bg-primary/10 text-primary" 
+           class="flex items-center gap-4 px-4 py-3.5 rounded-2xl text-gray-500 font-medium hover:bg-gray-50 hover:text-primary transition-all duration-200 group mt-2">
+          <lucide-icon [img]="icons.Settings" class="w-6 h-6 group-hover:scale-110 transition-transform"></lucide-icon>
+          <span *ngIf="isSidebarOpen" class="whitespace-nowrap">Administration</span>
+        </a>
+      </div>
+    </nav>
+
+    <!-- Profil Bas -->
+    <div class="p-4 border-t border-gray-100">
+      <div *ngIf="auth.estConnecte" class="flex items-center gap-4 p-2 rounded-2xl hover:bg-gray-50 cursor-pointer transition-colors">
+        <div class="w-11 h-11 rounded-full bg-gradient-to-br from-primary to-primary-dark text-white flex items-center justify-center font-bold text-lg shadow-md flex-shrink-0">
+          {{ auth.utilisateur?.nom?.charAt(0) }}
+        </div>
+        <div *ngIf="isSidebarOpen" class="overflow-hidden">
+          <p class="text-sm font-bold text-gray-900 truncate">{{ auth.utilisateur?.nom }}</p>
+          <p class="text-xs text-gray-500 font-medium truncate">{{ auth.role }}</p>
+        </div>
+        <button *ngIf="isSidebarOpen" (click)="logout()" class="ml-auto p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors">
+          <lucide-icon [img]="icons.LogOut" class="w-5 h-5"></lucide-icon>
+        </button>
+      </div>
+      <a *ngIf="!auth.estConnecte" routerLink="/connexion" 
+         class="block w-full text-center bg-gray-900 text-white py-3 rounded-xl font-bold hover:bg-gray-800 transition-colors">
+        Se connecter
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENU PRINCIPAL -->
+  <div class="flex-1 flex flex-col h-screen overflow-hidden relative">
+    <!-- TOPBAR -->
+    <header class="h-20 bg-surface/80 backdrop-blur-md border-b border-gray-200 flex items-center justify-between px-8 sticky top-0 z-20">
+      <div class="flex items-center gap-4">
+        <button (click)="toggleSidebar()" class="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors">
+          <lucide-icon [img]="icons.Menu" class="w-6 h-6"></lucide-icon>
+        </button>
+        <h1 class="text-xl font-bold text-gray-800 hidden md:block">Bienvenue sur votre espace</h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        
+        <!-- BADGE DE CRÉDIT (Ajouté ici) -->
+        <div *ngIf="auth.estConnecte" class="flex items-center gap-2 bg-[#F0F9F4] border border-[#5B8A72]/30 px-4 py-2 rounded-full shadow-sm cursor-default" title="Crédits disponibles">
+          <lucide-icon [img]="icons.Coins" class="w-5 h-5 text-[#5B8A72]"></lucide-icon>
+          <span class="text-sm font-bold text-gray-700">
+            {{ (solde$ | async)?.available || 0 }} <span class="text-gray-500 font-medium text-xs uppercase ml-0.5">Crédits</span>
+          </span>
+        </div>
+
+        <!-- Cloche de notification -->
+        <button class="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-full transition-colors relative">
+          <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
+          <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
+        </button>
+      </div>
+    </header>
+
+    <!-- ZONE DE CONTENU (Le pt-12 est crucial pour ne pas être coupé) -->
+    <main class="flex-1 overflow-y-auto pt-12 pb-8 px-6 md:px-10 bg-[#F4F7F6]">
+      <div class="max-w-7xl mx-auto min-h-full flex flex-col">
+        <div class="flex-1">
+          <router-outlet></router-outlet>
+        </div>
+        
+        <!-- FOOTER -->
+        <footer class="mt-12 pt-8 border-t border-gray-200 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-gray-400 pb-4">
+          <div class="flex items-center gap-2">
+            <div class="w-6 h-6 rounded-md bg-[#5B8A72] flex items-center justify-center text-white font-bold text-xs">S</div>
+            <span class="font-bold text-gray-700 tracking-tight">SkillSwap</span>
+            <span>&copy; 2026 - Tous droits réservés.</span>
+          </div>
+          <div class="flex gap-6 font-medium">
+            <a routerLink="/info/confidentialite" class="hover:text-[#5B8A72] transition-colors hover:-translate-y-0.5 transform duration-200">Confidentialité</a>
+            <a routerLink="/info/conditions" class="hover:text-[#5B8A72] transition-colors hover:-translate-y-0.5 transform duration-200">Conditions</a>
+            <a routerLink="/info/contact" class="hover:text-[#5B8A72] transition-colors hover:-translate-y-0.5 transform duration-200">Contact</a>
+          </div>
+        </footer>
+      </div>
+    </main>
+  </div>
+</div>
