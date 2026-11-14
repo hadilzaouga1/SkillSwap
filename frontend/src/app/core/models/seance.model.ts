@@ -12,7 +12,6 @@ export const MODE_LIBELLES: Record<SeanceMode, string> = {
 
 export interface EtapeProgramme { title: string; description?: string | null; minutes?: number | null; }
 
-/** Contenu décrit par le prestataire (miroir de sessionSchema côté session-service). */
 export interface SeanceContenu {
   title: string;
   summary: string | null;

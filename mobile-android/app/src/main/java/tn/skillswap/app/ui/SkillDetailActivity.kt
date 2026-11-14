@@ -8,7 +8,6 @@ import androidx.activity.compose.setContent
 import tn.skillswap.app.ui.screens.SkillDetailScreen
 import tn.skillswap.app.ui.theme.SkillSwapTheme
 
-/** ACTIVITY 4 — détail d'une compétence et demande d'échange. Reçoit SKILL_ID dans l'Intent et renvoie RESULT_OK. */
 class SkillDetailActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,7 +17,7 @@ class SkillDetailActivity : ComponentActivity() {
             SkillSwapTheme {
                 SkillDetailScreen(repo, skillId, onRetour = { finish() }, onEnvoye = {
                     Toast.makeText(this, "Demande envoyée !", Toast.LENGTH_SHORT).show()
-                    setResult(Activity.RESULT_OK)   // prévient HomeActivity de recharger ses listes
+                    setResult(Activity.RESULT_OK)
                     finish()
                 })
             }

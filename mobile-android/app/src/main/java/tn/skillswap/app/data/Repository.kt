@@ -50,7 +50,6 @@ class Repository(private val context: Context) {
         .build()
         .create(Api::class.java)
 
-    // ---------------- session ----------------
     suspend fun restaurerSession(): Boolean {
         val p = context.dataStore.data.first()
         val t = p[kToken] ?: return false
@@ -69,12 +68,20 @@ class Repository(private val context: Context) {
         }
     }
 
+    suspend fun inscription(request: InscriptionRequest) {
+        val r = api.inscription(request)
+        token = r.token
+        utilisateur = r.utilisateur
+        context.dataStore.edit {
+            it[kToken] = r.token; it[kNom] = r.utilisateur.nom
+            it[kRole] = r.utilisateur.role; it[kId] = r.utilisateur.id
+        }
+    }
+
     suspend fun deconnexion() {
         token = null; utilisateur = null
         context.dataStore.edit { it.clear() }
     }
-
-    // ---------------- PDF ----------------
 
     suspend fun telechargerPdf(exchangeId: Long, support: Support): File {
         val dossier = File(context.cacheDir, "pdf").apply { mkdirs() }
@@ -91,6 +98,13 @@ class Repository(private val context: Context) {
         )
         val titrePart = MultipartBody.Part.createFormData("title", titre)
         return api.ajouterPdf(exchangeId, fichier, titrePart)
+    }
+    suspend fun signalerFiche(exchangeId: Long) {
+        try { api.syncNotificationFiche(exchangeId) } catch (_: Exception) {}
+    }
+
+    suspend fun signaler(exchangeId: Long) {
+        try { api.syncNotification(exchangeId) } catch (_: Exception) {}
     }
 }
 

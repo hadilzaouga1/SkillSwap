@@ -11,7 +11,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import tn.skillswap.app.data.*
 
-/** Profil : identité, réputation (trust-service), avis reçus, déconnexion. */
 @Composable
 fun ProfilTab(repo: Repository, onDeconnexion: () -> Unit, refresh: Int) {
     val moi = repo.utilisateur

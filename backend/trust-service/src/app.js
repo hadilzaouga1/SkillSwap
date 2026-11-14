@@ -1,7 +1,3 @@
-// ============================================================
-//  trust-service : avis et réputation
-//  Après un échange TERMINÉ, chaque participant peut noter l'autre (1 à 5 + commentaire), une seule fois.
-// ============================================================
 import express from 'express';
 import morgan from 'morgan';
 import { z } from 'zod';
@@ -27,7 +23,6 @@ export async function migrer(db) {
   });
 }
 
-/** Badge de réputation selon la moyenne et le nombre d'avis. */
 export function badge(moyenne, nb) {
   if (nb >= 3 && moyenne >= 4.5) return { code: 'EXPERT', label: 'Expert fiable' };
   if (nb >= 1 && moyenne >= 4) return { code: 'WELL_RATED', label: 'Bien noté' };
@@ -54,7 +49,6 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
     return { userId, average: moyenne, count: nb, distribution: repartition, badge: badge(moyenne, nb), rows: l };
   }
 
-  // Poster un avis
   app.post('/api/reviews/exchange/:exchangeId', async (req, res) => {
     const id = lireId(req.params.exchangeId, "Identifiant d'échange");
     const d = valider(avisSchema, req.body);
@@ -72,7 +66,6 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
     res.status(201).json(vue(r));
   });
 
-  // Mon avis / avis reçu sur cet échange (l'avis reçu n'est visible qu'après avoir donné le sien)
   app.get('/api/reviews/exchange/:exchangeId', async (req, res) => {
     const id = lireId(req.params.exchangeId, "Identifiant d'échange");
     const e = await echangeDuParticipant(fetchExchange, id, req.user);
@@ -82,7 +75,6 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
       mine: mine ? vue(mine) : null, theirs: theirs ? vue(theirs) : null });
   });
 
-  // Réputation publique d'un étudiant
   app.get('/api/reviews/user/:userId', async (req, res) => {
     const uid = lireId(req.params.userId, "Identifiant d'étudiant");
     const rep = await reputation(uid);
@@ -90,7 +82,6 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
     res.json({ ...resume, reviews: rows.sort((a, b) => b.id - a.id).slice(0, 20).map((r) => ({ ...vue(r), reviewerId: undefined })) });
   });
 
-  // Résumés de plusieurs étudiants (catalogue)
   app.get('/api/reviews/summary', async (req, res) => {
     const ids = String(req.query.userIds ?? '').split(',').map(Number).filter((n) => Number.isInteger(n) && n > 0).slice(0, 100);
     const out = {};

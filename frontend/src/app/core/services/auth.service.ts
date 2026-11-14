@@ -2,7 +2,6 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
-// 1. MODIFICATION ICI :
 import { API_URLS } from '../config/api.config'; 
 import {
   AuthResponse, ConnexionRequest, InscriptionRequest, Role, UtilisateurConnecte
@@ -13,7 +12,6 @@ export class AuthService {
   private static readonly CLE_TOKEN = 'skillswap_token';
   private static readonly CLE_UTILISATEUR = 'skillswap_utilisateur';
 
-  // 2. MODIFICATION ICI (ajout de .gateway) :
   private urlAuth = `${API_URLS.gateway}/auth`; 
   private utilisateurCourant: UtilisateurConnecte | null = null;
 
@@ -21,7 +19,6 @@ export class AuthService {
     this.utilisateurCourant = this.lireUtilisateurMemorise();
   }
 
-  // ... (le reste du fichier reste inchangé)
   get token(): string | null {
     return localStorage.getItem(AuthService.CLE_TOKEN);
   }

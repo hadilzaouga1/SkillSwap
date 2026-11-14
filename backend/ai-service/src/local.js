@@ -1,12 +1,7 @@
-// ============================================================
-//  Mode local (sans clé d'API) : réponses déterministes, gratuites et testables.
-//  C'est aussi le filet de sécurité si le LLM est indisponible.
-// ============================================================
 import { FAQ, SUGGESTIONS_PAR_PAGE, MOTS_VIDES } from './knowledge.js';
 
 export const sansAccents = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-/** Mots-clés de recherche extraits d'une phrase libre ("je veux apprendre Java et Spring"). */
 export function motsCles(message) {
   return sansAccents(message).replace(/[^a-z0-9+#.\s]/g, ' ').split(/\s+/)
     .filter((m) => m.length >= 2 && !MOTS_VIDES.has(m)).slice(0, 4);
@@ -43,7 +38,6 @@ export function repondreLocal(message, context = {}, competences = []) {
 
 const arrondi5 = (n) => Math.max(5, Math.round(n / 5) * 5);
 
-/** Brouillon de fiche de séance : structure pédagogique générique mise à l'échelle de la durée. */
 export function brouillonSeance({ skillTitle, level, durationHours, mode, extra }) {
   const titre = skillTitle.trim();
   const total = Math.max(30, Math.round((durationHours || 1) * 60));
@@ -66,7 +60,6 @@ export function brouillonSeance({ skillTitle, level, durationHours, mode, extra 
   };
 }
 
-/** Nettoyage typographique + conseils de rédaction (mode local). */
 export function ameliorerLocal(texte, kind) {
   let t = texte.replace(/\s+/g, ' ').replace(/\s+([,.;:!?])/g, '$1').replace(/([,.;:!?])(?=\p{L})/gu, '$1 ').trim();
   t = t.charAt(0).toUpperCase() + t.slice(1);

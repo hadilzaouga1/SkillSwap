@@ -15,7 +15,6 @@ export class AppComponent {
 
   constructor(public auth: AuthService) { }
 
-  /** Texte affiché à côté du nom de l'utilisateur. */
   get libelleRole(): string {
     switch (this.auth.role) {
       case 'ADMIN': return 'Administrateur';

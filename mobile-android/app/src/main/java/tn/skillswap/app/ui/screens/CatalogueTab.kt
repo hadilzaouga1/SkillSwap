@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import tn.skillswap.app.data.*
 
-/** Catalogue : liste défilante (LazyColumn = l'équivalent Compose de RecyclerView/ListView). */
 @Composable
 fun CatalogueTab(repo: Repository, onCompetence: (Long) -> Unit, refresh: Int) {
     var motCle by remember { mutableStateOf("") }

@@ -17,11 +17,8 @@ import {
   templateUrl: './main-layout.component.html'
 })
 export class MainLayoutComponent implements OnInit {
-  // Ajout de l'icône Coins ici
   readonly icons = { LayoutDashboard, Search, BookOpen, RefreshCw, Shield, LogOut, User, Bell, Settings, Menu, Coins };
   isSidebarOpen = true;
-
-  // On expose l'observable du solde
   solde$ = this.creditService.solde$;
 
   constructor(
@@ -30,7 +27,6 @@ export class MainLayoutComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Si l'utilisateur est connecté, on récupère son solde dès l'ouverture du layout
     if (this.auth.estConnecte) {
       this.creditService.rafraichirSolde();
     }

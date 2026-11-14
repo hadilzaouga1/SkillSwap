@@ -8,11 +8,6 @@ import androidx.activity.compose.setContent
 import tn.skillswap.app.ui.screens.AssistantScreen
 import tn.skillswap.app.ui.theme.SkillSwapTheme
 
-/**
- * ACTIVITY 7 — assistant IA (chat).
- * Elle déclare aussi un INTENT-FILTER (voir AndroidManifest) : depuis n'importe quelle application,
- * « Partager → SkillSwap » envoie le texte sélectionné ici, et l'assistant y répond.
- */
 class AssistantActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

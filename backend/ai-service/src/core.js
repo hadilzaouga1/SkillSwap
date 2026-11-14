@@ -1,10 +1,3 @@
-// ============================================================
-//  Briques communes (copiées dans chaque microservice Node : chaque service reste autonome)
-//  - ApiError : erreur métier avec code HTTP
-//  - creerDb  : SQLite en dev, MySQL en prod (knex)
-//  - authentifier : lit X-User-Id / X-User-Role posés par l'API Gateway après validation du JWT
-//  - creerClientEchanges : consulte exchange-service pour connaître les participants d'un échange
-// ============================================================
 import knex from 'knex';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -53,7 +46,6 @@ export function valider(schema, donnees) {
   return r.data;
 }
 
-/** (exchangeId, user) => échange | null (null = exchange-service injoignable). Lève 404/403 sinon. */
 export function creerClientEchanges(baseUrl = process.env.EXCHANGE_SERVICE_URL || 'http://localhost:8082') {
   return async function recupererEchange(exchangeId, user) {
     let r;
@@ -70,7 +62,6 @@ export function creerClientEchanges(baseUrl = process.env.EXCHANGE_SERVICE_URL |
   };
 }
 
-/** Échange où l'appelant est participant, sinon erreur. */
 export async function echangeDuParticipant(fetchExchange, exchangeId, user) {
   const e = await fetchExchange(exchangeId, user);
   if (!e) throw new ApiError(503, 'Le service des échanges est indisponible, réessayez plus tard');

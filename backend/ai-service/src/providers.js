@@ -1,7 +1,3 @@
-// ============================================================
-//  Fournisseur LLM : API Anthropic (Claude) si ANTHROPIC_API_KEY est défini, sinon aucun (mode local).
-//  La clé n'est lue que depuis l'environnement : jamais dans le code ni dans git.
-// ============================================================
 export function creerFournisseur({
   apiKey = process.env.ANTHROPIC_API_KEY,
   model = process.env.AI_MODEL || 'claude-sonnet-5-5',
@@ -12,7 +8,6 @@ export function creerFournisseur({
   return {
     name: 'anthropic',
     model,
-    /** messages = [{role:'user'|'assistant', content}] ; retourne le texte de la réponse. */
     async complete(system, messages, { maxTokens = 700 } = {}) {
       const r = await fetchImpl(`${baseUrl}/v1/messages`, {
         method: 'POST',

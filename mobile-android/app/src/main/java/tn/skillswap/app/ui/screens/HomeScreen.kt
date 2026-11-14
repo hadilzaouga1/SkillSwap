@@ -14,7 +14,6 @@ import androidx.compose.ui.text.font.FontWeight
 import tn.skillswap.app.data.Exchange
 import tn.skillswap.app.data.Repository
 
-/** Actions déclenchées par les écrans : chacune démarre une autre Activity (Intent explicite) dans HomeActivity. */
 class HomeActions(
     val ouvrirCompetence: (Long) -> Unit,
     val ouvrirSeance: (Long) -> Unit,
@@ -24,7 +23,6 @@ class HomeActions(
     val deconnexion: () -> Unit,
 )
 
-/** Accueil : 4 onglets (Catalogue, Échanges, Alertes, Profil) + bouton de l'assistant IA. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(repo: Repository, actions: HomeActions, refresh: Int) {
@@ -62,6 +60,5 @@ fun HomeScreen(repo: Repository, actions: HomeActions, refresh: Int) {
             }
         }
     }
-    // Le compteur de la pastille est aussi chargé au démarrage (sans ouvrir l'onglet Alertes)
     LaunchedEffect(refresh) { try { nonLues = repo.api.notifications().unreadCount } catch (_: Exception) {} }
 }

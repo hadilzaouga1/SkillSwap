@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import tn.skillswap.app.ui.screens.RegisterScreen
 import tn.skillswap.app.ui.theme.SkillSwapTheme
 
-/** ACTIVITY 2 — création de compte. Après l'inscription, on repart d'une pile vide (FLAG_ACTIVITY_CLEAR_TASK). */
 class RegisterActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

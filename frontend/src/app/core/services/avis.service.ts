@@ -4,7 +4,6 @@ import { Observable } from 'rxjs';
 import { API_URLS } from '../config/api.config';
 import { Avis, AvisEchange, Reputation } from '../models/notification.model';
 
-/** Avis et réputation (trust-service, /api/reviews/**). */
 @Injectable({ providedIn: 'root' })
 export class AvisService {
   private base = `${API_URLS.gateway}/reviews`;

@@ -1,14 +1,7 @@
-// ============================================================
-//  notification-service : notifications "dans l'application" (cloche web + mobile)
-//  Les autres services ne sont pas modifiés : après une action sur un échange, le client
-//  (web/mobile) appelle POST /api/notifications/exchange/{id}/sync. Le message est DÉDUIT du
-//  statut réel de l'échange (lu dans exchange-service), jamais fourni par le client.
-// ============================================================
 import express from 'express';
 import morgan from 'morgan';
 import { ApiError, authentifier, lireId, creerClientEchanges, echangeDuParticipant, gestionErreurs } from './core.js';
 
-/** statut -> { destinataire, type, titre, texte } (le destinataire est "l'autre" personne concernée). */
 const REGLES = {
   PENDING:               { vers: 'provider',  type: 'EXCHANGE_REQUEST',  titre: 'Nouvelle demande d\'échange', texte: (t) => `Quelqu'un souhaite suivre « ${t} ». Répondez à la demande.` },
   TIME_PROPOSED:         { vers: 'requester', type: 'EXCHANGE_TIME',     titre: 'Nouveau créneau proposé',     texte: (t) => `Le prestataire propose un autre créneau pour « ${t} ».` },
@@ -84,12 +77,11 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
       });
       return true;
     } catch (err) {
-      if (/unique/i.test(String(err.message))) return false; // déjà notifié pour ce statut
+      if (/unique/i.test(String(err.message))) return false;
       throw err;
     }
   }
 
-  // Notifie "l'autre" participant du statut ACTUEL de l'échange (idempotent).
   app.post('/api/notifications/exchange/:exchangeId/sync', async (req, res) => {
     const id = lireId(req.params.exchangeId, "Identifiant d'échange");
     const e = await echangeDuParticipant(fetchExchange, id, req.user);
@@ -102,7 +94,6 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
     res.status(created ? 201 : 200).json({ created });
   });
 
-  // La fiche de séance a changé : prévient l'autre participant (au plus une notification non lue à la fois).
   app.post('/api/notifications/exchange/:exchangeId/session-updated', async (req, res) => {
     const id = lireId(req.params.exchangeId, "Identifiant d'échange");
     const e = await echangeDuParticipant(fetchExchange, id, req.user);

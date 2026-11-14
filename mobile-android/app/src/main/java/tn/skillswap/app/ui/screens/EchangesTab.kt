@@ -39,7 +39,6 @@ fun EchangesTab(repo: Repository, actions: HomeActions, refresh: Int) {
     }
     LaunchedEffect(refresh) { charger() }
 
-    /** Exécute une action puis notifie l'autre participant (cloche) et recharge la liste. */
     fun action(appel: suspend () -> Exchange) = scope.launch {
         try { val maj = appel(); repo.signaler(maj.id); charger() }
         catch (e: Exception) { erreur = e.messageUtilisateur(); if (e is HttpException && e.code() == 409) charger() }

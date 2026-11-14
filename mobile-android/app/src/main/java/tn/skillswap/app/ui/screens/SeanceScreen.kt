@@ -22,10 +22,6 @@ import tn.skillswap.app.data.*
 import tn.skillswap.app.ui.ouvrirLien
 import tn.skillswap.app.ui.partagerTexte
 
-/**
- * Fiche complète d'une séance : description, objectifs, programme, public, modalités,
- * et supports (PDF + liens). Le prestataire peut modifier les champs principaux.
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
@@ -42,7 +38,6 @@ fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
     }
     LaunchedEffect(exchangeId) { charger() }
 
-    // Sélecteur de PDF du téléphone
     val choisirPdf = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         if (uri != null) scope.launch {
             try {
@@ -64,7 +59,6 @@ fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
         catch (e: Exception) { erreur = e.messageUtilisateur() }
     }
 
-    // INTENT IMPLICITE (ACTION_VIEW) : voir Extras.kt
     fun ouvrirLien(url: String) = ctx.ouvrirLien(url)
 
     Scaffold(

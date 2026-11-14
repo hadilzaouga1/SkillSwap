@@ -18,7 +18,6 @@ import tn.skillswap.app.data.*
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
-/** Détail d'une compétence + formulaire de demande d'échange (durée, date, message avec aide de l'IA). */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SkillDetailScreen(repo: Repository, skillId: Long, onRetour: () -> Unit, onEnvoye: () -> Unit) {
@@ -40,7 +39,6 @@ fun SkillDetailScreen(repo: Repository, skillId: Long, onRetour: () -> Unit, onE
         } catch (e: Exception) { erreur = e.messageUtilisateur() }
     }
 
-    /** Boîtes de dialogue Android classiques : d'abord la date, puis l'heure. */
     fun choisirDate() {
         val base = date ?: LocalDateTime.now().plusDays(2).withMinute(0)
         DatePickerDialog(ctx, { _, a, m, j ->

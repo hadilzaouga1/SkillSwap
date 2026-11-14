@@ -17,7 +17,7 @@ import tn.skillswap.app.data.messageUtilisateur
 
 @Composable
 fun LoginScreen(repo: Repository, onConnecte: () -> Unit, onInscription: () -> Unit) {
-    var email by remember { mutableStateOf("hadil@univ.tn") }  // compte de démonstration
+    var email by remember { mutableStateOf("hadil@univ.tn") }
     var mdp by remember { mutableStateOf("Password123!") }
     var erreur by remember { mutableStateOf<String?>(null) }
     var charge by remember { mutableStateOf(false) }

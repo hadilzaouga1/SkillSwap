@@ -12,7 +12,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import tn.skillswap.app.data.*
 
-/** Notifications (notification-service) : liste, lecture au toucher, "tout marquer comme lu". */
 @Composable
 fun AlertesTab(repo: Repository, onSeance: (Long) -> Unit, refresh: Int, onNonLues: (Int) -> Unit) {
     var liste by remember { mutableStateOf<List<NotificationItem>>(emptyList()) }

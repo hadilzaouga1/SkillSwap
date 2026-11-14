@@ -7,7 +7,6 @@ import androidx.activity.compose.setContent
 import tn.skillswap.app.ui.screens.AvisScreen
 import tn.skillswap.app.ui.theme.SkillSwapTheme
 
-/** ACTIVITY 6 — avis sur un échange terminé. Reçoit EXCHANGE_ID et EXCHANGE_TITLE. */
 class AvisActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

@@ -13,10 +13,6 @@ import androidx.compose.ui.Modifier
 import tn.skillswap.app.ui.screens.LoginScreen
 import tn.skillswap.app.ui.theme.SkillSwapTheme
 
-/**
- * ACTIVITY 1 — point d'entrée (LAUNCHER). Si un jeton est déjà enregistré, on passe directement à l'accueil.
- * Navigation par INTENT EXPLICITE : startActivity(Intent(this, HomeActivity::class.java)).
- */
 class LoginActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -34,6 +30,6 @@ class LoginActivity : ComponentActivity() {
 
     private fun allerAccueil() {
         startActivity(Intent(this, HomeActivity::class.java))
-        finish() // on retire l'écran de connexion de la pile : "Retour" ne revient pas dessus
+        finish()
     }
 }

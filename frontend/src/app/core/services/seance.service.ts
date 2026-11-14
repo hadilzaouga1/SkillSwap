@@ -4,11 +4,6 @@ import { Observable } from 'rxjs';
 import { API_URLS } from '../config/api.config';
 import { ResumeSeance, SeanceContenu, SeanceReponse, SupportSeance } from '../models/seance.model';
 
-/**
- * Appels HTTP vers /api/sessions (session-service, Node/Express, port 8087 derrière la Gateway).
- * Une "séance" est toujours identifiée par l'id de l'échange auquel elle appartient.
- * (Ne pas confondre avec SessionService, qui simule l'utilisateur connecté.)
- */
 @Injectable({ providedIn: 'root' })
 export class SeanceService {
   private base = `${API_URLS.gateway}/sessions`;
@@ -38,7 +33,6 @@ export class SeanceService {
     return this.http.post<SupportSeance>(`${this.base}/by-exchange/${exchangeId}/resources/pdf`, f);
   }
 
-  /** Le PDF exige le jeton JWT : on le télécharge en blob puis on l'ouvre via une URL locale. */
   telechargerPdf(exchangeId: number, resourceId: number): Observable<Blob> {
     return this.http.get(`${this.base}/by-exchange/${exchangeId}/resources/${resourceId}/file`, { responseType: 'blob' });
   }

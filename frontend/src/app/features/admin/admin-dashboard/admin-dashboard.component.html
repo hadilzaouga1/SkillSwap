@@ -52,14 +52,12 @@
       <lucide-icon [img]="icons.Users" class="w-4 h-4"></lucide-icon> Gestion des comptes
     </button>
   </div>
-
-  <!-- ==================== ONGLET : VALIDATION DES COURS ==================== -->
   <div *ngIf="ongletActif === 'dashboard'" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
     <h2 class="text-2xl font-bold text-gray-900 mb-6">Compétences à valider</h2>
     
     <!-- Message si la liste est vide -->
     <p *ngIf="competencesEnAttente.length === 0" class="text-gray-500 text-center py-8 bg-gray-50 rounded-2xl">
-      🎉 Tout est à jour ! Aucune compétence en attente.
+       Tout est à jour ! Aucune compétence en attente.
     </p>
 
     <div class="space-y-4">
@@ -89,7 +87,6 @@
     </div>
   </div>
 
-  <!-- ==================== ONGLET : GESTION DES COMPTES ==================== -->
   <div *ngIf="ongletActif === 'utilisateurs'" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm">
     
     <div class="flex justify-between items-center mb-6">

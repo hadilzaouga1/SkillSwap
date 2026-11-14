@@ -4,10 +4,7 @@ import { Observable } from 'rxjs';
 import { API_URLS } from '../config/api.config';
 import { IaBrouillonSeance, IaChatReponse, IaMessage } from '../models/ia.model';
 
-/**
- * Agent IA de SkillSwap (ai-service, port 8090 derrière la Gateway : /api/ai/**).
- * Utilisé partout : assistant flottant, fiche de séance, création de compétence, demande d'échange, avis.
- */
+
 @Injectable({ providedIn: 'root' })
 export class IaService {
   private base = `${API_URLS.gateway}/ai`;

@@ -1,11 +1,3 @@
-// ============================================================
-//  ai-service : l'agent IA de SkillSwap, utilisé par TOUT le projet (web + mobile)
-//   - POST /api/ai/chat            assistant conversationnel + recommandation de compétences
-//   - POST /api/ai/session-draft   brouillon complet de fiche de séance
-//   - POST /api/ai/skill-draft     description d'une compétence à partir de son titre
-//   - POST /api/ai/improve-text    reformulation + conseils (description, demande, avis...)
-//  Avec ANTHROPIC_API_KEY -> Claude ; sans clé (ou en cas de panne) -> mode local déterministe.
-// ============================================================
 import express from 'express';
 import morgan from 'morgan';
 import { z } from 'zod';
@@ -35,7 +27,6 @@ const improveSchema = z.object({
   kind: z.enum(['description', 'skill', 'request', 'review']).nullish().transform((v) => v ?? 'description'),
 });
 
-/** Validation tolérante du brouillon renvoyé par le LLM : on borne tout, sinon on retombe sur le mode local. */
 const sortieSeance = z.object({
   title: z.string().min(3).max(160), summary: z.string().max(300).nullish(), description: z.string().max(4000),
   objectives: z.array(z.string().max(200)).max(10), 
@@ -65,7 +56,6 @@ export function creerApp({
   app.get('/health', (_q, res) => res.json({ status: 'UP', service: 'ai-service', provider: fournisseur?.name ?? 'local' }));
   app.use('/api/ai', authentifier);
 
-  // Limite simple par utilisateur (protège le quota du LLM)
   const appels = new Map();
   app.use('/api/ai', (req, _res, next) => {
     const maintenant = Date.now();
@@ -75,7 +65,6 @@ export function creerApp({
     next();
   });
 
-  /** Cherche dans le catalogue (skill-service, via les mêmes en-têtes que la Gateway). */
   async function chercherCompetences(message, user) {
     const mots = motsCles(message);
     if (!mots.length) return [];

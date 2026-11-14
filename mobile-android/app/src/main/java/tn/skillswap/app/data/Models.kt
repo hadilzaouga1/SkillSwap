@@ -3,9 +3,7 @@ package tn.skillswap.app.data
 import kotlinx.serialization.Serializable
 
 @Serializable data class ConnexionRequest(val email: String, val motDePasse: String)
-
 @Serializable data class Utilisateur(val id: Long, val nom: String, val email: String, val role: String)
-
 @Serializable data class AuthResponse(val token: String, val utilisateur: Utilisateur)
 
 @Serializable
@@ -41,10 +39,8 @@ data class ExchangeRequest(
     val skillId: Long,
     val description: String,
     val durationHours: Int,
-    val proposedDateTime: String, // "2026-11-20T18:00:00"
+    val proposedDateTime: String,
 )
-
-// ---------- Séances (session-service) ----------
 
 @Serializable
 data class Etape(val title: String, val description: String? = null, val minutes: Int? = null)
@@ -72,7 +68,7 @@ data class SeanceContenu(
 @Serializable
 data class Support(
     val id: Long,
-    val kind: String, // "PDF" ou "LINK"
+    val kind: String,
     val title: String,
     val description: String? = null,
     val url: String? = null,
@@ -85,16 +81,141 @@ data class Support(
 @Serializable data class Completude(val percent: Int = 0, val missing: List<String> = emptyList())
 
 @Serializable
+data class ExchangeResume(
+    val id: Long,
+    val skillId: Long? = null,
+    val skillTitle: String? = null,
+    val providerId: Long,
+    val requesterId: Long,
+    val durationHours: Double? = null,
+    val proposedDateTime: String? = null,
+    val status: String? = null
+)
+
+@Serializable
 data class SeanceReponse(
     val exists: Boolean = false,
-    val role: String = "REQUESTER", // PROVIDER | REQUESTER | MODERATOR
+    val role: String = "REQUESTER",
     val canEdit: Boolean = false,
     val canAddResources: Boolean = false,
+    val exchange: ExchangeResume = ExchangeResume(0, null, null, 0, 0, null, null, null),
     val completeness: Completude = Completude(),
     val session: SeanceContenu = SeanceContenu(),
     val resources: List<Support> = emptyList(),
 )
 
 @Serializable data class LienRequest(val title: String, val url: String)
-
 @Serializable data class ResumeSeance(val exists: Boolean = false, val percent: Int = 0, val resources: Int = 0)
+
+@Serializable
+data class NotificationItem(
+    val id: Long,
+    val type: String,
+    val title: String,
+    val message: String,
+    val link: String? = null,
+    val exchangeId: Long? = null,
+    val read: Boolean = false,
+    val createdAt: String
+)
+
+@Serializable
+data class NotificationsResponse(
+    val unreadCount: Int = 0,
+    val items: List<NotificationItem> = emptyList()
+)
+
+@Serializable
+data class IaMsg(val role: String, val content: String)
+
+@Serializable
+data class IaContext(val page: String? = null)
+
+@Serializable
+data class IaChatRequest(
+    val message: String,
+    val history: List<IaMsg> = emptyList(),
+    val context: IaContext = IaContext()
+)
+
+@Serializable
+data class IaCompetence(
+    val id: Long,
+    val titre: String,
+    val niveau: String? = null,
+    val categorie: String? = null,
+    val etudiantId: Long? = null
+)
+
+@Serializable
+data class IaChatResponse(
+    val reply: String,
+    val suggestions: List<String> = emptyList(),
+    val skills: List<IaCompetence> = emptyList(),
+    val provider: String = "local"
+)
+
+@Serializable
+data class IaImproveRequest(val text: String, val kind: String)
+
+@Serializable
+data class IaImproveResponse(val text: String, val tips: List<String> = emptyList())
+
+@Serializable
+data class IaSeanceRequest(
+    val skillTitle: String,
+    val level: String? = null,
+    val durationHours: Double = 1.0,
+    val mode: String? = null,
+    val extra: String? = null
+)
+
+@Serializable
+data class IaSeanceResponse(val draft: SeanceContenu, val provider: String = "local")
+
+@Serializable
+data class AvisEchange(
+    val canReview: Boolean,
+    val status: String,
+    val mine: Avis? = null,
+    val theirs: Avis? = null
+)
+
+@Serializable
+data class Avis(
+    val id: Long,
+    val exchangeId: Long,
+    val reviewerId: Long,
+    val revieweeId: Long,
+    val rating: Int,
+    val comment: String? = null,
+    val skillTitle: String? = null,
+    val createdAt: String
+)
+
+@Serializable
+data class AvisRequest(val rating: Int, val comment: String? = null)
+
+@Serializable
+data class Reputation(
+    val userId: Long,
+    val average: Double,
+    val count: Int,
+    val distribution: Map<String, Int>,
+    val badge: Badge? = null,
+    val reviews: List<Avis> = emptyList()
+)
+
+@Serializable
+data class Badge(val code: String, val label: String)
+
+@Serializable
+data class InscriptionRequest(
+    val nom: String,
+    val email: String,
+    val motDePasse: String,
+    val universite: String,
+    val filiere: String
+)
+
+@Serializable data class UnreadCountResponse(val unreadCount: Int = 0)

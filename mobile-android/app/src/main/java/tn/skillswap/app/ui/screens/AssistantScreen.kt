@@ -20,7 +20,6 @@ import tn.skillswap.app.data.*
 
 private data class Bulle(val auteur: String, val texte: String, val competences: List<IaCompetence> = emptyList())
 
-/** Chat avec l'agent IA : bulles dans une LazyColumn, suggestions dans une LazyRow, compétences cliquables. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssistantScreen(repo: Repository, page: String, texteInitial: String?, onRetour: () -> Unit, onCompetence: (Long) -> Unit) {
@@ -93,6 +92,5 @@ fun AssistantScreen(repo: Repository, page: String, texteInitial: String?, onRet
             erreur?.let { e -> item { MessageErreur(e) } }
         }
     }
-    // Question reçue d'une autre application (partage Android) : envoyée automatiquement
     LaunchedEffect(Unit) { if (!texteInitial.isNullOrBlank()) envoyer(texteInitial) }
 }

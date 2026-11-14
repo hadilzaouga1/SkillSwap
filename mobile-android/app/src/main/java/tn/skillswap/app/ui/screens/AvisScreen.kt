@@ -14,7 +14,6 @@ import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import tn.skillswap.app.data.*
 
-/** Avis sur un échange terminé : étoiles, commentaire (reformulable par l'IA), avis déjà donnés. */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AvisScreen(repo: Repository, exchangeId: Long, titre: String, onRetour: () -> Unit, onPublie: () -> Unit) {
@@ -62,8 +61,8 @@ fun AvisScreen(repo: Repository, exchangeId: Long, titre: String, onRetour: () -
                             catch (e: Exception) { erreur = e.messageUtilisateur() }
                             occupe = false
                         }
-                    }) { Text("✨ Reformuler avec l'IA") }
-                    conseils.forEach { Text("💡 $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+                    }) { Text(" Reformuler avec l'IA") }
+                    conseils.forEach { Text("$it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     Button(enabled = note > 0 && !occupe, modifier = Modifier.fillMaxWidth(), onClick = {
                         occupe = true; erreur = null
                         scope.launch {
