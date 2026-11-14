@@ -13,6 +13,20 @@
       </p>
     </div>
 
+    <!-- Réputation (trust-service) -->
+    <div class="infos card" *ngIf="reputation && reputation.count > 0">
+      <p>
+        <strong>Réputation :</strong>
+        <span style="color:#f5b301"> {{ etoiles(reputation.average) }}</span>
+        {{ reputation.average | number:'1.1-1' }} / 5 ({{ reputation.count }} avis)
+        <span *ngIf="reputation.badge" class="badge" style="margin-left:8px">🏅 {{ reputation.badge.label }}</span>
+      </p>
+      <p *ngFor="let a of reputation.reviews.slice(0, 3)" class="description">
+        <span style="color:#f5b301">{{ etoiles(a.rating) }}</span> {{ a.comment }}
+        <em *ngIf="a.skillTitle"> — {{ a.skillTitle }}</em>
+      </p>
+    </div>
+
     <h2>Compétences proposées</h2>
     <p *ngIf="competences.length === 0" class="vide">Aucune compétence publiée.</p>
 

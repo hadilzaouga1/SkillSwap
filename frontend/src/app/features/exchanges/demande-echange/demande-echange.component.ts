@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CompetenceService } from '../../../core/services/competence.service';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
+import { NotificationService } from '../../../core/services/notification.service';
+import { IaService } from '../../../core/services/ia.service';
 import { ExchangeService } from '../../../core/services/exchange.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { Competence } from '../../../core/models/competence.model';
@@ -41,8 +43,23 @@ export class DemandeEchangeComponent implements OnInit {
     private competenceService: CompetenceService,
     private utilisateurService: UtilisateurService,
     private exchangeService: ExchangeService,
-    private auth: AuthService
+    private auth: AuthService,
+    private notifications: NotificationService,
+    private ia: IaService
   ) {}
+
+  iaEnCours = false;
+  iaConseils: string[] = [];
+
+  /** Agent IA : reformule le message adressé au prestataire. */
+  ameliorerMessage(): void {
+    if (this.form.description.trim().length < 3) return;
+    this.iaEnCours = true;
+    this.ia.ameliorer(this.form.description, 'request').subscribe({
+      next: (r) => { this.form.description = r.text.slice(0, 1000); this.iaConseils = r.tips; this.iaEnCours = false; },
+      error: (err) => { this.erreur = messageErreur(err); this.iaEnCours = false; }
+    });
+  }
 
   ngOnInit(): void {
     const skillId = Number(this.route.snapshot.paramMap.get('skillId'));
@@ -95,7 +112,10 @@ export class DemandeEchangeComponent implements OnInit {
         proposedDateTime: versFormatApi(this.form.proposedDateTime)
       })
       .subscribe({
-        next: () => this.router.navigate(['/echanges'], { queryParams: { onglet: 'envoyees', cree: 1 } }),
+        next: (e) => {
+          this.notifications.signaler(e.id); // le prestataire reçoit une notification
+          this.router.navigate(['/echanges'], { queryParams: { onglet: 'envoyees', cree: 1 } });
+        },
         error: (err) => {
           this.erreur = messageErreur(err);
           this.envoiEnCours = false;

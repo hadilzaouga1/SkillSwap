@@ -52,6 +52,13 @@
         <textarea formControlName="description" rows="4" 
                   placeholder="Décrivez ce que vous proposez, ce que l'élève va apprendre..."
                   class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-[#5B8A72]/50 focus:border-[#5B8A72] block p-3 transition-colors outline-none resize-none"></textarea>
+        <div class="mt-2 flex flex-wrap items-center gap-3">
+          <button type="button" (click)="assisterDescription()" [disabled]="iaEnCours"
+                  class="text-sm font-bold text-[#5B8A72] hover:underline disabled:opacity-40">
+            {{ iaEnCours ? 'L\'IA rédige…' : '✨ ' + (form.value.description ? 'Améliorer avec l\'IA' : 'Générer avec l\'IA') }}
+          </button>
+          <span *ngFor="let t of iaConseils" class="text-xs text-gray-500">💡 {{ t }}</span>
+        </div>
       </div>
 
       <!-- Disponibilités -->

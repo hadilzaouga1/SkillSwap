@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Observable, forkJoin } from 'rxjs';
+import { NotificationService } from '../../../core/services/notification.service';
+import { AvisEchangeComponent } from '../../../shared/avis-echange/avis-echange.component';
 import { ExchangeService } from '../../../core/services/exchange.service';
 import { SeanceService } from '../../../core/services/seance.service';
 import { ResumeSeance } from '../../../core/models/seance.model';
@@ -22,7 +24,7 @@ type Onglet = 'recues' | 'envoyees';
 @Component({
   selector: 'app-mes-echanges',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, AvisEchangeComponent],
   templateUrl: './mes-echanges.component.html',
   styleUrl: './mes-echanges.component.scss'
 })
@@ -52,6 +54,7 @@ export class MesEchangesComponent implements OnInit {
     private exchangeService: ExchangeService,
     private utilisateurService: UtilisateurService,
     private seanceService: SeanceService,
+    private notifications: NotificationService,
     private route: ActivatedRoute,
     public auth: AuthService
   ) {}
@@ -208,6 +211,7 @@ export class MesEchangesComponent implements OnInit {
         this.recues = this.recues.map((x) => (x.id === maj.id ? maj : x));
         this.envoyees = this.envoyees.map((x) => (x.id === maj.id ? maj : x));
         this.succes = messageSucces;
+        this.notifications.signaler(maj.id); // notifie l'autre participant (cloche)
         this.enCours = null;
       },
       error: (err) => {

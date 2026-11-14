@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { CreditService } from '../../core/services/credit.service';
+import { AssistantIaComponent } from '../../shared/assistant-ia/assistant-ia.component';
+import { NotificationBellComponent } from '../../shared/notification-bell/notification-bell.component';
 import { 
   LucideAngularModule, LayoutDashboard, Search, BookOpen, RefreshCw, 
   Shield, LogOut, User, Bell, Settings, Menu, Coins
@@ -11,7 +13,7 @@ import {
 @Component({
   selector: 'app-main-layout',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, LucideAngularModule, AssistantIaComponent, NotificationBellComponent],
   templateUrl: './main-layout.component.html'
 })
 export class MainLayoutComponent implements OnInit {

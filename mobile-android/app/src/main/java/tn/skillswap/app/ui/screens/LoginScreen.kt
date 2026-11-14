@@ -16,7 +16,7 @@ import tn.skillswap.app.data.Repository
 import tn.skillswap.app.data.messageUtilisateur
 
 @Composable
-fun LoginScreen(repo: Repository, onConnecte: () -> Unit) {
+fun LoginScreen(repo: Repository, onConnecte: () -> Unit, onInscription: () -> Unit) {
     var email by remember { mutableStateOf("hadil@univ.tn") }  // compte de démonstration
     var mdp by remember { mutableStateOf("Password123!") }
     var erreur by remember { mutableStateOf<String?>(null) }
@@ -49,6 +49,7 @@ fun LoginScreen(repo: Repository, onConnecte: () -> Unit) {
                 enabled = !charge && email.isNotBlank() && mdp.isNotBlank(),
                 modifier = Modifier.fillMaxWidth(),
             ) { Text(if (charge) "Connexion…" else "Se connecter") }
+            TextButton(onClick = onInscription, modifier = Modifier.fillMaxWidth()) { Text("Pas de compte ? Créer un compte") }
         }
     }
 }

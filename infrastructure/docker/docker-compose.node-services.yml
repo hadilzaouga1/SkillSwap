@@ -1,0 +1,27 @@
+# Les 4 microservices Node. À lancer en plus des services Spring Boot :
+#   docker compose -f infrastructure/docker/docker-compose.node-services.yml up --build
+# (non testé dans l'environnement de génération). Les services Spring tournent sur la machine hôte.
+services:
+  session-service:
+    build: ../../backend/session-service
+    ports: ["8087:8087"]
+    environment: { PORT: 8087, EXCHANGE_SERVICE_URL: "http://host.docker.internal:8082" }
+    volumes: ["session-data:/app/data"]
+  trust-service:
+    build: ../../backend/trust-service
+    ports: ["8088:8088"]
+    environment: { PORT: 8088, EXCHANGE_SERVICE_URL: "http://host.docker.internal:8082" }
+    volumes: ["trust-data:/app/data"]
+  notification-service:
+    build: ../../backend/notification-service
+    ports: ["8089:8089"]
+    environment: { PORT: 8089, EXCHANGE_SERVICE_URL: "http://host.docker.internal:8082" }
+    volumes: ["notification-data:/app/data"]
+  ai-service:
+    build: ../../backend/ai-service
+    ports: ["8090:8090"]
+    environment:
+      PORT: 8090
+      SKILL_SERVICE_URL: "http://host.docker.internal:8084"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"   # facultatif : sans clé, mode local
+volumes: { session-data: {}, trust-data: {}, notification-data: {} }

@@ -34,6 +34,11 @@
       <textarea name="description" rows="4" maxlength="1000" [(ngModel)]="form.description"
                 placeholder="Expliquez ce que vous aimeriez apprendre..."
                 class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-sm rounded-xl focus:ring-2 focus:ring-primary/50 focus:border-primary block p-4 transition-colors outline-none resize-none"></textarea>
+      <div class="mt-2 flex flex-wrap items-center gap-3">
+        <button type="button" (click)="ameliorerMessage()" [disabled]="iaEnCours || form.description.trim().length < 3"
+                class="text-sm font-bold text-[#5B8A72] hover:underline disabled:opacity-40">{{ iaEnCours ? 'Reformulation…' : '✨ Améliorer mon message avec l\'IA' }}</button>
+        <span *ngFor="let t of iaConseils" class="text-xs text-gray-500">💡 {{ t }}</span>
+      </div>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">

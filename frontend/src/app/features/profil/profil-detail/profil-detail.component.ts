@@ -5,6 +5,8 @@ import { UtilisateurService } from '../../../core/services/utilisateur.service';
 import { CompetenceService } from '../../../core/services/competence.service';
 import { ProfilPublic } from '../../../core/models/profil.model';
 import { Competence } from '../../../core/models/competence.model';
+import { AvisService } from '../../../core/services/avis.service';
+import { Reputation } from '../../../core/models/notification.model';
 import { NiveauPipe } from '../../../shared/pipes/niveau.pipe';
 import { messageErreur } from '../../../core/utils/erreur.util';
 
@@ -24,8 +26,12 @@ export class ProfilDetailComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private utilisateurService: UtilisateurService,
-    private competenceService: CompetenceService
+    private competenceService: CompetenceService,
+    private avisService: AvisService
   ) {}
+
+  reputation: Reputation | null = null;
+  etoiles(n: number): string { return '★'.repeat(Math.round(n)) + '☆'.repeat(5 - Math.round(n)); }
 
   ngOnInit(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
@@ -34,6 +40,9 @@ export class ProfilDetailComponent implements OnInit {
       next: (data) => (this.profil = data),
       error: (err) => (this.erreur = messageErreur(err))
     });
+
+    // Réputation (trust-service) : facultative, la page reste utilisable si le service est arrêté
+    this.avisService.reputation(id).subscribe({ next: (r) => (this.reputation = r), error: () => {} });
 
     // On réutilise la recherche du catalogue avec le filtre "etudiantId"
     this.competenceService.getCompetences({ etudiantId: id }).subscribe({

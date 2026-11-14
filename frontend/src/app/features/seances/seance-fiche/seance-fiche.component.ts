@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { SeanceService } from '../../../core/services/seance.service';
+import { IaService } from '../../../core/services/ia.service';
+import { NotificationService } from '../../../core/services/notification.service';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   EtapeProgramme, FORMAT_LIBELLES, MODE_LIBELLES, SeanceContenu, SeanceFormat,
@@ -35,7 +37,49 @@ export class SeanceFicheComponent implements OnInit {
   readonly modes = Object.entries(MODE_LIBELLES) as [SeanceMode, string][];
   readonly niveaux = [['DEBUTANT', 'Débutant'], ['INTERMEDIAIRE', 'Intermédiaire'], ['AVANCE', 'Avancé']];
 
-  constructor(private route: ActivatedRoute, private service: SeanceService, public auth: AuthService) {}
+  iaEnCours = false;
+  iaConseils: string[] = [];
+
+  constructor(private route: ActivatedRoute, private service: SeanceService, public auth: AuthService,
+              private ia: IaService, private notifications: NotificationService) {}
+
+  /** Agent IA : propose un brouillon complet. Les champs déjà remplis ne sont PAS écrasés. */
+  genererAvecIa(): void {
+    const titre = (this.form.title || this.data?.exchange.skillTitle || '').trim();
+    if (titre.length < 2) { this.erreur = 'Saisissez d\'abord un titre.'; return; }
+    this.iaEnCours = true; this.erreur = '';
+    this.ia.brouillonSeance(titre, { level: this.form.level, durationHours: this.data?.exchange.durationHours ?? 1,
+                                     mode: this.form.mode, extra: this.form.description }).subscribe({
+      next: ({ draft }) => {
+        const f = this.form;
+        f.title = f.title || draft.title;
+        f.summary = f.summary || draft.summary || null;
+        f.description = f.description || draft.description;
+        if (!this.objectifsTexte.trim()) this.objectifsTexte = draft.objectives.join('\n');
+        if (!f.outline.length) f.outline = draft.outline.map((e) => ({ title: e.title, minutes: e.minutes }));
+        f.prerequisites = f.prerequisites || draft.prerequisites || null;
+        f.audience = f.audience || draft.audience || null;
+        f.level = f.level || draft.level || null;
+        f.format = f.format || (draft.format as SeanceFormat) || null;
+        f.mode = f.mode || (draft.mode as SeanceMode) || null;
+        f.deliveryNotes = f.deliveryNotes || draft.deliveryNotes || null;
+        f.materials = f.materials || draft.materials || null;
+        this.succes = 'Brouillon généré par l\'IA : relisez-le et adaptez-le avant d\'enregistrer.';
+        this.iaEnCours = false;
+      },
+      error: (e) => { this.erreur = messageErreur(e); this.iaEnCours = false; }
+    });
+  }
+
+  /** Agent IA : reformule la description saisie. */
+  ameliorerDescription(): void {
+    if ((this.form.description || '').trim().length < 3) return;
+    this.iaEnCours = true;
+    this.ia.ameliorer(this.form.description!, 'description').subscribe({
+      next: (r) => { this.form.description = r.text; this.iaConseils = r.tips; this.iaEnCours = false; },
+      error: (e) => { this.erreur = messageErreur(e); this.iaEnCours = false; }
+    });
+  }
 
   ngOnInit(): void {
     this.exchangeId = Number(this.route.snapshot.paramMap.get('id'));
@@ -136,7 +180,8 @@ export class SeanceFicheComponent implements OnInit {
         this.data = d; 
         this.edition = false; 
         this.enCours = false; 
-        this.succes = 'La fiche de la séance a été enregistrée avec succès !'; 
+        this.succes = 'La fiche de la séance a été enregistrée avec succès !';
+        this.notifications.signalerFiche(this.exchangeId); 
       },
       error: (e) => { 
         // Si l'enregistrement échoue (ex: 403 ou 503), on affiche l'erreur
@@ -149,7 +194,7 @@ export class SeanceFicheComponent implements OnInit {
   ajouterLien(): void {
     this.erreur = ''; this.succes = '';
     this.service.ajouterLien(this.exchangeId, this.lienTitre.trim(), this.lienUrl.trim(), this.lienDescription.trim() || undefined).subscribe({
-      next: () => { this.lienTitre = this.lienUrl = this.lienDescription = ''; this.succes = 'Lien ajouté.'; this.recharger(); },
+      next: () => { this.lienTitre = this.lienUrl = this.lienDescription = ''; this.succes = 'Lien ajouté.'; this.notifications.signalerFiche(this.exchangeId); this.recharger(); },
       error: (e) => (this.erreur = messageErreur(e))
     });
   }
@@ -164,7 +209,7 @@ export class SeanceFicheComponent implements OnInit {
     if (!this.pdfFichier) return;
     this.erreur = ''; this.succes = ''; this.enCours = true;
     this.service.ajouterPdf(this.exchangeId, this.pdfFichier, this.pdfTitre.trim()).subscribe({
-      next: () => { this.pdfFichier = null; this.pdfTitre = ''; this.succes = 'PDF ajouté.'; this.enCours = false; this.recharger(); },
+      next: () => { this.pdfFichier = null; this.pdfTitre = ''; this.succes = 'PDF ajouté.'; this.enCours = false; this.notifications.signalerFiche(this.exchangeId); this.recharger(); },
       error: (e) => { this.erreur = messageErreur(e); this.enCours = false; }
     });
   }

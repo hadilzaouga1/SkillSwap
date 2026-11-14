@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { CompetenceService } from '../../../core/services/competence.service';
+import { IaService } from '../../../core/services/ia.service';
 import { CategorieService } from '../../../core/services/categorie.service';
 import { Categorie } from '../../../core/models/categorie.model';
 import { CompetenceRequest, NIVEAUX } from '../../../core/models/competence.model';
@@ -35,7 +36,8 @@ export class CompetenceFormComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private competenceService: CompetenceService,
-    private categorieService: CategorieService
+    private categorieService: CategorieService,
+    private ia: IaService
   ) {
     // Règles de validation (mêmes limites que CompetenceRequest.java côté backend)
     this.form = this.fb.group({
@@ -45,6 +47,32 @@ export class CompetenceFormComponent implements OnInit {
       description: ['', Validators.maxLength(2000)],
       disponibilites: ['', Validators.maxLength(255)]
     });
+  }
+
+  iaEnCours = false;
+  iaConseils: string[] = [];
+
+  /** Agent IA : rédige la description (et des disponibilités) à partir du titre, ou reformule la description saisie. */
+  assisterDescription(): void {
+    const titre = (this.form.value.titre || '').trim();
+    const texte = (this.form.value.description || '').trim();
+    if (titre.length < 2 && texte.length < 3) { this.erreur = 'Saisissez d\'abord un titre ou un début de description.'; return; }
+    this.iaEnCours = true; this.erreur = '';
+    if (texte.length >= 3) {
+      this.ia.ameliorer(texte, 'skill').subscribe({
+        next: (r) => { this.form.patchValue({ description: r.text }); this.iaConseils = r.tips; this.iaEnCours = false; },
+        error: (e) => { this.erreur = messageErreur(e); this.iaEnCours = false; }
+      });
+    } else {
+      this.ia.brouillonCompetence(titre, this.form.value.niveau).subscribe({
+        next: (r) => {
+          this.form.patchValue({ description: r.description });
+          if (!this.form.value.disponibilites && r.disponibilites) this.form.patchValue({ disponibilites: r.disponibilites });
+          this.iaConseils = []; this.iaEnCours = false;
+        },
+        error: (e) => { this.erreur = messageErreur(e); this.iaEnCours = false; }
+      });
+    }
   }
 
   get modeModification(): boolean {

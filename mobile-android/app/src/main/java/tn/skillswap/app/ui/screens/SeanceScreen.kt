@@ -19,6 +19,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import kotlinx.coroutines.launch
 import tn.skillswap.app.data.*
+import tn.skillswap.app.ui.ouvrirLien
+import tn.skillswap.app.ui.partagerTexte
 
 /**
  * Fiche complète d'une séance : description, objectifs, programme, public, modalités,
@@ -47,7 +49,7 @@ fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
                 val octets = ctx.contentResolver.openInputStream(uri)!!.use { it.readBytes() }
                 val nom = uri.lastPathSegment?.substringAfterLast('/') ?: "document.pdf"
                 repo.envoyerPdf(exchangeId, octets, if (nom.endsWith(".pdf", true)) nom else "$nom.pdf", nom.removeSuffix(".pdf"))
-                info = "PDF ajouté."; charger()
+                info = "PDF ajouté."; repo.signalerFiche(exchangeId); charger()
             } catch (e: Exception) { erreur = e.messageUtilisateur() }
         }
     }
@@ -62,10 +64,8 @@ fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
         catch (e: Exception) { erreur = e.messageUtilisateur() }
     }
 
-    fun ouvrirLien(url: String) {
-        try { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) }
-        catch (_: Exception) { erreur = "Impossible d'ouvrir ce lien." }
-    }
+    // INTENT IMPLICITE (ACTION_VIEW) : voir Extras.kt
+    fun ouvrirLien(url: String) = ctx.ouvrirLien(url)
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.background,
@@ -97,12 +97,21 @@ fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
                     if (d.completeness.missing.isNotEmpty())
                         Text("À compléter : " + d.completeness.missing.joinToString(" · "),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    OutlinedButton(onClick = {
+                        // INTENT IMPLICITE (ACTION_SEND) : le téléphone propose WhatsApp, Mail, SMS…
+                        ctx.partagerTexte(c.title, buildString {
+                            append("Séance SkillSwap : ${c.title}\n")
+                            c.summary?.let { append("$it\n") }
+                            c.mode?.let { append("Mode : ${MODES[it] ?: it}\n") }
+                            c.meetingLink?.let { append("Lien : $it") }
+                        })
+                    }) { Text("Partager la fiche") }
                     if (d.canEdit && !edition) Button(onClick = { edition = true }) { Text(if (d.exists) "Modifier la fiche" else "Décrire la séance") }
                 }
 
-                if (edition) FormulaireEdition(c, onAnnuler = { edition = false }) { nouveau ->
+                if (edition) FormulaireEdition(repo, d.exchange, c, onAnnuler = { edition = false }) { nouveau ->
                     scope.launch {
-                        try { data = repo.api.enregistrerSeance(exchangeId, nouveau); edition = false; info = "Fiche enregistrée." ; erreur = null }
+                        try { data = repo.api.enregistrerSeance(exchangeId, nouveau); edition = false; info = "Fiche enregistrée." ; erreur = null; repo.signalerFiche(exchangeId) }
                         catch (e: Exception) { erreur = e.messageUtilisateur() }
                     }
                 } else {
@@ -152,7 +161,7 @@ fun SeanceScreen(repo: Repository, exchangeId: Long, onRetour: () -> Unit) {
                         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Button(enabled = titre.isNotBlank() && url.isNotBlank(), onClick = {
                                 scope.launch {
-                                    try { repo.api.ajouterLien(exchangeId, LienRequest(titre.trim(), url.trim())); titre = ""; url = ""; info = "Lien ajouté."; charger() }
+                                    try { repo.api.ajouterLien(exchangeId, LienRequest(titre.trim(), url.trim())); titre = ""; url = ""; info = "Lien ajouté."; repo.signalerFiche(exchangeId); charger() }
                                     catch (e: Exception) { erreur = e.messageUtilisateur() }
                                 }
                             }) { Text("Ajouter le lien") }
@@ -176,7 +185,7 @@ private fun Ligne(label: String, valeur: String?) {
 
 /** Formulaire du prestataire. Les champs non affichés (programme, niveau…) sont conservés tels quels. */
 @Composable
-private fun FormulaireEdition(c: SeanceContenu, onAnnuler: () -> Unit, onEnregistrer: (SeanceContenu) -> Unit) {
+private fun FormulaireEdition(repo: Repository, echange: ExchangeResume, c: SeanceContenu, onAnnuler: () -> Unit, onEnregistrer: (SeanceContenu) -> Unit) {
     var titre by remember { mutableStateOf(c.title) }
     var resume by remember { mutableStateOf(c.summary.orEmpty()) }
     var description by remember { mutableStateOf(c.description.orEmpty()) }
@@ -188,8 +197,33 @@ private fun FormulaireEdition(c: SeanceContenu, onAnnuler: () -> Unit, onEnregis
     var lieu by remember { mutableStateOf(c.location.orEmpty()) }
     var deroulement by remember { mutableStateOf(c.deliveryNotes.orEmpty()) }
 
+    val scope = rememberCoroutineScope()
+    var ia by remember { mutableStateOf(false) }
+    var iaErreur by remember { mutableStateOf<String?>(null) }
+    var programme by remember { mutableStateOf(c.outline) }
+
     Carte {
         Titre("Décrire la séance")
+        // AGENT IA : propose un brouillon complet, sans écraser ce qui est déjà rempli
+        OutlinedButton(enabled = !ia, modifier = Modifier.fillMaxWidth(), onClick = {
+            ia = true; iaErreur = null
+            scope.launch {
+                try {
+                    val t = titre.ifBlank { echange.skillTitle.orEmpty() }
+                    val r = repo.api.iaBrouillonSeance(IaSeanceRequest(t.ifBlank { "Ma séance" }, c.level, echange.durationHours ?: 1.0, mode, description.ifBlank { null })).draft
+                    if (titre.isBlank()) titre = r.title
+                    if (resume.isBlank()) resume = r.summary.orEmpty()
+                    if (description.isBlank()) description = r.description.orEmpty()
+                    if (objectifs.isBlank()) objectifs = r.objectives.joinToString("\n")
+                    if (audience.isBlank()) audience = r.audience.orEmpty()
+                    if (mode == null) mode = r.mode
+                    if (deroulement.isBlank()) deroulement = r.deliveryNotes.orEmpty()
+                    if (programme.isEmpty()) programme = r.outline
+                } catch (e: Exception) { iaErreur = e.messageUtilisateur() }
+                ia = false
+            }
+        }) { Text(if (ia) "L'IA rédige…" else "✨ Générer un brouillon avec l'IA") }
+        MessageErreur(iaErreur)
         OutlinedTextField(titre, { titre = it }, label = { Text("Titre *") }, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(resume, { resume = it }, label = { Text("Résumé") }, modifier = Modifier.fillMaxWidth())
         OutlinedTextField(description, { description = it }, label = { Text("Description complète") }, minLines = 4, modifier = Modifier.fillMaxWidth())
@@ -207,6 +241,7 @@ private fun FormulaireEdition(c: SeanceContenu, onAnnuler: () -> Unit, onEnregis
             Button(enabled = titre.trim().length >= 3, onClick = {
                 fun n(s: String) = s.trim().ifBlank { null }
                 onEnregistrer(c.copy(
+                    outline = programme,
                     title = titre.trim(), summary = n(resume), description = n(description),
                     objectives = objectifs.lines().map { it.trim() }.filter { it.isNotEmpty() },
                     audience = n(audience), mode = mode, platform = n(plateforme), meetingLink = n(lien),

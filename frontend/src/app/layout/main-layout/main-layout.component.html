@@ -103,11 +103,8 @@
           </span>
         </div>
 
-        <!-- Cloche de notification -->
-        <button class="p-2.5 text-gray-400 hover:text-primary hover:bg-primary/5 rounded-full transition-colors relative">
-          <lucide-icon [img]="icons.Bell" class="w-5 h-5"></lucide-icon>
-          <span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-white"></span>
-        </button>
+        <!-- Cloche de notifications (notification-service) -->
+        <app-notification-bell></app-notification-bell>
       </div>
     </header>
 
@@ -135,3 +132,6 @@
     </main>
   </div>
 </div>
+
+<!-- Assistant IA présent sur toutes les pages -->
+<app-assistant-ia></app-assistant-ia>

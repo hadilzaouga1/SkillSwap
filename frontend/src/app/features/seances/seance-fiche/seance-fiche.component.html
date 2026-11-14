@@ -44,7 +44,13 @@
 
       <form *ngIf="edition" (ngSubmit)="enregistrer()" #f="ngForm"
             class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-6">
-        <h2 class="text-xl font-extrabold text-gray-900">Décrire la séance</h2>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2 class="text-xl font-extrabold text-gray-900">Décrire la séance</h2>
+          <button type="button" (click)="genererAvecIa()" [disabled]="iaEnCours"
+                  class="bg-[#F0F9F4] text-[#4A725D] border border-[#5B8A72]/30 px-4 py-2 rounded-xl text-sm font-bold hover:bg-[#dff1e7] disabled:opacity-50">
+            {{ iaEnCours ? "L'IA rédige…" : "✨ Générer un brouillon avec l'IA" }}
+          </button>
+        </div>
 
         <div class="grid gap-5 md:grid-cols-2">
           <label class="md:col-span-2 block text-sm font-bold text-gray-700">Titre *
@@ -58,6 +64,10 @@
           <label class="md:col-span-2 block text-sm font-bold text-gray-700">Description complète : de quoi parle le cours ?
             <textarea name="description" [(ngModel)]="form.description" rows="5" maxlength="4000"
                       class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none focus:ring-2 focus:ring-[#5B8A72]/40"></textarea>
+            <span class="flex flex-wrap items-center gap-3 mt-1">
+              <button type="button" (click)="ameliorerDescription()" [disabled]="iaEnCours" class="text-xs font-bold text-[#5B8A72] hover:underline">✨ Reformuler avec l'IA</button>
+              <span *ngFor="let t of iaConseils" class="text-xs font-normal text-gray-500">💡 {{ t }}</span>
+            </span>
           </label>
           <label class="md:col-span-2 block text-sm font-bold text-gray-700">Objectifs (un par ligne)
             <textarea name="objectifs" [(ngModel)]="objectifsTexte" rows="3" placeholder="Comprendre les contrôleurs&#10;Écrire un test"

@@ -74,6 +74,9 @@
           <span class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-xs">{{ nom(interlocuteurId(e)).charAt(0) }}</span>
           {{ onglet === 'recues' ? 'Demandé par' : 'Prestataire' }} : <span class="text-[#5B8A72] font-bold">{{ nom(interlocuteurId(e)) }}</span>
         </div>
+
+        <!-- Avis (trust-service) : uniquement quand l'échange est terminé -->
+        <app-avis-echange *ngIf="e.status === 'COMPLETED'" [exchangeId]="e.id"></app-avis-echange>
       </div>
 
       <!-- Actions (selon le rôle et le statut) -->
