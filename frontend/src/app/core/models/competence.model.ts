@@ -8,29 +8,46 @@ export const NIVEAUX: { valeur: Niveau; libelle: string }[] = [
 
 export type StatutValidation = 'EN_ATTENTE' | 'VALIDEE' | 'REFUSEE';
 
+/** Catégorie renvoyée dans une compétence par le skill-service. */
+export interface CategorieInfo {
+  id: number;
+  nom: string;
+}
+
+/** Étudiant propriétaire d'une compétence (facultatif côté réponse). */
+export interface EtudiantInfo {
+  id: number;
+  nom: string;
+}
+
 export interface Competence {
   id: number;
   titre: string;
-  description: string;
-  niveau: Niveau;
-  disponibilites: string | null;
+  description?: string;
+  niveau: string;
+  categorieId?: number;
+  disponibilites?: string;
   statutValidation: StatutValidation;
-  categorie: { id: number; nom: string };
+  categorie: CategorieInfo;
   etudiantId?: number;
-  etudiant?: { id: number; nom: string };
+  etudiant?: EtudiantInfo;
+  documentUrl?: string;
+  documentName?: string;
+  documentSize?: number;
 }
 
-export interface CompetenceRequest {
-  titre: string;
-  description: string;
-  niveau: Niveau;
-  categorieId: number;
-  disponibilites: string;
-}
-
+/** Filtres acceptés par CompetenceService.getCompetences(...). */
 export interface FiltresCompetence {
   motCle?: string;
   categorieId?: number | null;
   niveau?: Niveau | '';
-  etudiantId?: number | null;
+  etudiantId?: number;
+}
+
+export interface CompetenceRequest {
+  titre: string;
+  description?: string;
+  niveau: Niveau;
+  categorieId: number;
+  disponibilites?: string;
 }

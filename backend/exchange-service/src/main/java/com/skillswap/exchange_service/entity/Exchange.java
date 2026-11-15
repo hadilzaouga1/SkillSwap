@@ -21,18 +21,15 @@ public class Exchange {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // Identifiants externes (identity-service) : pas de relation JPA entre microservices
     @Column(name = "requester_id", nullable = false)
     private Long requesterId;
 
     @Column(name = "provider_id", nullable = false)
     private Long providerId;
 
-    // Identifiant externe (skill-service)
     @Column(name = "skill_id", nullable = false)
     private Long skillId;
 
-    // Copie du titre au moment de la demande, pour l'affichage sans rappeler skill-service
     @Column(name = "skill_title", nullable = false, length = 255)
     private String skillTitle;
 
@@ -50,7 +47,14 @@ public class Exchange {
     @Column(nullable = false, length = 30)
     private ExchangeStatus status;
 
-    // Verrou optimiste : empêche deux acceptations/confirmations simultanées
+    // Lien de réunion généré automatiquement lors de l'acceptation
+    @Column(name = "meeting_link", length = 500)
+    private String meetingLink;
+
+    // AJOUT : Pour savoir si on a déjà envoyé le rappel des 10 minutes
+    @Column(name = "reminder_sent", nullable = false)
+    private Boolean reminderSent = false;
+
     @Version
     @Column(nullable = false)
     private Long version;

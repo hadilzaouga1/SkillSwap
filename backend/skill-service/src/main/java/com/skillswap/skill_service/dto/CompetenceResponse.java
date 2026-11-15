@@ -12,7 +12,10 @@ public record CompetenceResponse(
         String disponibilites,
         StatutValidation statutValidation,
         CategorieInfo categorie,
-        Long etudiantId
+        Long etudiantId,
+        String documentUrl,
+        String documentName,
+        Long documentSize
 ) {
     public record CategorieInfo(Long id, String nom) {}
 
@@ -25,7 +28,10 @@ public record CompetenceResponse(
                 c.getDisponibilites(),
                 c.getStatutValidation(),
                 new CategorieInfo(c.getCategorie().getId(), c.getCategorie().getNom()),
-                c.getEtudiantId()
+                c.getEtudiantId(),
+                c.getDocumentUrl(),
+                c.getDocumentName(),
+                c.getDocumentSize()
         );
     }
 }

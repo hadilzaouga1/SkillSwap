@@ -6,6 +6,9 @@ import { SeanceService } from '../../../core/services/seance.service';
 import { IaService } from '../../../core/services/ia.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { CompetenceService } from '../../../core/services/competence.service'; // <-- AJOUT
+import { Competence } from '../../../core/models/competence.model'; // <-- AJOUT
+import { API_URLS } from '../../../core/config/api.config'; // <-- AJOUT
 import {
   EtapeProgramme, FORMAT_LIBELLES, MODE_LIBELLES, SeanceContenu, SeanceFormat,
   SeanceMode, SeanceReponse, SupportSeance
@@ -27,6 +30,9 @@ export class SeanceFicheComponent implements OnInit {
   edition = false;
   enCours = false;
 
+  competence: Competence | null = null; // <-- AJOUT
+  baseUrl = API_URLS.gateway.replace('/api', ''); // <-- AJOUT
+
   form: SeanceContenu = this.vide();
   objectifsTexte = '';
 
@@ -40,10 +46,106 @@ export class SeanceFicheComponent implements OnInit {
   iaEnCours = false;
   iaConseils: string[] = [];
 
-  constructor(private route: ActivatedRoute, private service: SeanceService, public auth: AuthService,
-              private ia: IaService, private notifications: NotificationService) {}
+  constructor(
+    private route: ActivatedRoute, 
+    private service: SeanceService, 
+    public auth: AuthService,
+    private ia: IaService, 
+    private notifications: NotificationService,
+    private competenceService: CompetenceService // <-- AJOUT
+  ) {}
 
-  /** Agent IA : propose un brouillon complet. Les champs déjà remplis ne sont PAS écrasés. */
+  ngOnInit(): void {
+    this.exchangeId = Number(this.route.snapshot.paramMap.get('id'));
+    this.charger();
+  }
+
+  // --- GESTION DU BOUTON VISIO ---
+  rejoindreReunion(event: Event): void {
+    if (!this.data?.exchange.proposedDateTime) return;
+    
+    const now = new Date();
+    const proposed = new Date(this.data.exchange.proposedDateTime);
+    
+    if (now < proposed) {
+      event.preventDefault(); // Bloque l'ouverture du lien
+      const dateStr = proposed.toLocaleString('fr-FR', { dateStyle: 'long', timeStyle: 'short' });
+      alert(`La séance est prévue le ${dateStr}. Vous ne pouvez pas rejoindre la réunion avant l'heure prévue.`);
+    }
+  }
+
+  charger(): void {
+    this.loading = true;
+    this.erreur = '';
+    
+    this.service.get(this.exchangeId).subscribe({
+      next: (d) => { 
+        this.data = d; 
+        this.loading = false; 
+        
+        // Récupérer le PDF de la compétence initiale
+        if (d.exchange.skillId) {
+          this.competenceService.getCompetence(d.exchange.skillId).subscribe({
+            next: (c) => this.competence = c,
+            error: () => {} // On ignore si la compétence n'est plus trouvée
+          });
+        }
+
+        if (d.canEdit && !d.exists) {
+          this.ouvrirEdition();
+        }
+      },
+      error: (e) => { 
+        console.error("Erreur backend :", e);
+        if (e.status === 404) {
+          this.erreur = ""; 
+          this.data = {
+            exists: false,
+            role: 'PROVIDER',
+            canEdit: true,
+            canAddResources: true,
+            exchange: { id: this.exchangeId, skillId: 0, skillTitle: "Cours", providerId: 1, requesterId: 2, meetingLink: null },
+            completeness: { percent: 0, missing: [] },
+            session: this.vide(),
+            resources: []
+          } as unknown as SeanceReponse;
+          this.ouvrirEdition(); 
+        } else {
+          this.erreur = messageErreur(e); 
+        }
+        this.loading = false; 
+      }
+    });
+  }
+
+  private vide(): SeanceContenu {
+    return { title: '', summary: null, description: null, objectives: [], outline: [], prerequisites: null, audience: null,
+             level: null, language: 'Français', format: null, mode: null, platform: null, meetingLink: null,
+             location: null, deliveryNotes: null, materials: null };
+  }
+
+  ouvrirEdition(): void {
+    if (!this.data) return;
+    this.form = JSON.parse(JSON.stringify(this.data.session));
+    
+    // Le lien Jitsi est auto-généré, on s'assure qu'il est bien pré-rempli pour l'affichage
+    if (!this.form.meetingLink && this.data.exchange.meetingLink) {
+      this.form.meetingLink = this.data.exchange.meetingLink;
+    }
+
+    this.objectifsTexte = (this.form.objectives || []).join('\n');
+    this.edition = true;
+    this.succes = ''; this.erreur = '';
+  }
+
+  annulerEdition(): void {
+    this.edition = false;
+    this.erreur = '';
+  }
+
+  // ... (Le reste des méthodes reste identique : genererAvecIa, ameliorerDescription, enregistrer, etc.)
+  // Je remets les méthodes existantes ici pour que tu aies le fichier complet
+  
   genererAvecIa(): void {
     const titre = (this.form.title || this.data?.exchange.skillTitle || '').trim();
     if (titre.length < 2) { this.erreur = 'Saisissez d\'abord un titre.'; return; }
@@ -71,7 +173,6 @@ export class SeanceFicheComponent implements OnInit {
     });
   }
 
-  /** Agent IA : reformule la description saisie. */
   ameliorerDescription(): void {
     if ((this.form.description || '').trim().length < 3) return;
     this.iaEnCours = true;
@@ -79,11 +180,6 @@ export class SeanceFicheComponent implements OnInit {
       next: (r) => { this.form.description = r.text; this.iaConseils = r.tips; this.iaEnCours = false; },
       error: (e) => { this.erreur = messageErreur(e); this.iaEnCours = false; }
     });
-  }
-
-  ngOnInit(): void {
-    this.exchangeId = Number(this.route.snapshot.paramMap.get('id'));
-    this.charger();
   }
 
   libelleFormat(f: SeanceFormat | null): string { return f ? FORMAT_LIBELLES[f] : '—'; }
@@ -94,65 +190,6 @@ export class SeanceFicheComponent implements OnInit {
   taille(octets: number | null): string {
     if (!octets) return '';
     return octets > 1048576 ? (octets / 1048576).toFixed(1) + ' Mo' : Math.max(1, Math.round(octets / 1024)) + ' Ko';
-  }
-
-  charger(): void {
-    this.loading = true;
-    this.erreur = '';
-    
-    this.service.get(this.exchangeId).subscribe({
-      next: (d) => { 
-        this.data = d; 
-        this.loading = false; 
-        if (d.canEdit && !d.exists) {
-          this.ouvrirEdition();
-        }
-      },
-      error: (e) => { 
-        console.error("Erreur backend :", e);
-        
-        // 🚀 SOLUTION DE SECOURS : Si l'échange n'existe pas, on force l'affichage du formulaire !
-        if (e.status === 404) {
-          this.erreur = ""; // On cache l'erreur
-          
-          // On crée une fausse fiche pour que le formulaire s'ouvre
-          this.data = {
-            exists: false,
-            role: 'PROVIDER',
-            canEdit: true,
-            canAddResources: true,
-            exchange: { id: this.exchangeId, skillTitle: "Cours d'Angular", providerId: 1, requesterId: 2 },
-            completeness: { percent: 0, missing: [] },
-            session: this.vide(),
-            resources: []
-          } as unknown as SeanceReponse;
-          
-          this.ouvrirEdition(); // Ouvre le formulaire !
-        } else {
-          this.erreur = messageErreur(e); 
-        }
-        this.loading = false; 
-      }
-    });
-  }
-
-  private vide(): SeanceContenu {
-    return { title: '', summary: null, description: null, objectives: [], outline: [], prerequisites: null, audience: null,
-             level: null, language: 'Français', format: null, mode: null, platform: null, meetingLink: null,
-             location: null, deliveryNotes: null, materials: null };
-  }
-
-  ouvrirEdition(): void {
-    if (!this.data) return;
-    this.form = JSON.parse(JSON.stringify(this.data.session));
-    this.objectifsTexte = (this.form.objectives || []).join('\n');
-    this.edition = true;
-    this.succes = ''; this.erreur = '';
-  }
-
-  annulerEdition(): void {
-    this.edition = false;
-    this.erreur = '';
   }
 
   ajouterEtape(): void { this.form.outline.push({ title: '', minutes: 30 } as EtapeProgramme); }
@@ -174,7 +211,6 @@ export class SeanceFicheComponent implements OnInit {
 
   enregistrer(): void {
     this.enCours = true; this.erreur = ''; this.succes = '';
-    
     this.service.enregistrer(this.exchangeId, this.nettoye()).subscribe({
       next: (d) => { 
         this.data = d; 
@@ -184,7 +220,6 @@ export class SeanceFicheComponent implements OnInit {
         this.notifications.signalerFiche(this.exchangeId); 
       },
       error: (e) => { 
-        // Si l'enregistrement échoue (ex: 403 ou 503), on affiche l'erreur
         this.erreur = messageErreur(e); 
         this.enCours = false; 
       }

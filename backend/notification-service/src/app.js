@@ -35,6 +35,34 @@ export function creerApp({ db, fetchExchange = creerClientEchanges(), journal = 
   if (journal) app.use(morgan('tiny'));
   app.use(express.json({ limit: '50kb' }));
   app.get('/health', (_q, res) => res.json({ status: 'UP', service: 'notification-service' }));
+
+  // ======================================================================
+  // AJOUT : Route interne appelée par exchange-service pour les rappels
+  // ======================================================================
+  app.post('/internal/notifications/reminder', async (req, res) => {
+    const { exchangeId, requesterId, providerId, skillTitle, meetingLink } = req.body;
+    
+    try {
+      await db('notifications').insert([
+        {
+          user_id: requesterId, type: 'MEETING_REMINDER', title: 'Rappel de réunion',
+          message: `Votre séance pour « ${skillTitle} » commence dans 10 minutes.`,
+          link: meetingLink, exchange_id: exchangeId, dedupe_key: `rem-${exchangeId}-req`
+        },
+        {
+          user_id: providerId, type: 'MEETING_REMINDER', title: 'Rappel de réunion',
+          message: `Votre séance pour « ${skillTitle} » commence dans 10 minutes.`,
+          link: meetingLink, exchange_id: exchangeId, dedupe_key: `rem-${exchangeId}-prov`
+        }
+      ]);
+      res.status(201).json({ created: true });
+    } catch (err) {
+      if (/unique/i.test(String(err.message))) return res.json({ created: false }); // Déjà envoyé
+      console.error("Erreur rappel:", err);
+      res.status(500).json({ error: err.message });
+    }
+  });
+
   app.use('/api/notifications', authentifier);
 
   const vue = (n) => ({ id: n.id, type: n.type, title: n.title, message: n.message, link: n.link,

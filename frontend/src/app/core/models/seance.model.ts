@@ -51,8 +51,17 @@ export interface SeanceReponse {
   role: SeanceRole;
   canEdit: boolean;
   canAddResources: boolean;
-  exchange: { id: number; skillTitle?: string | null; providerId: number; requesterId: number;
-              durationHours?: number | null; proposedDateTime?: string | null; status?: string | null };
+  exchange: { 
+    id: number; 
+    skillId?: number; // <-- AJOUT ICI
+    skillTitle?: string | null; 
+    providerId: number; 
+    requesterId: number;
+    durationHours?: number | null; 
+    proposedDateTime?: string | null; 
+    status?: string | null;
+    meetingLink?: string | null; 
+  };
   completeness: { percent: number; missing: string[] };
   session: SeanceContenu;
   resources: SupportSeance[];

@@ -36,13 +36,13 @@ export class CompetenceService {
     return this.http.get<Competence[]>(`${this.apiUrl}/mes-competences`);
   }
 
-  creer(data: CompetenceRequest): Observable<Competence> {
-    return this.http.post<Competence>(this.apiUrl, data);
-  }
+creer(data: CompetenceRequest | FormData): Observable<Competence> {
+  return this.http.post<Competence>(this.apiUrl, data);
+}
 
-  modifier(id: number, data: CompetenceRequest): Observable<Competence> {
-    return this.http.put<Competence>(`${this.apiUrl}/${id}`, data);
-  }
+modifier(id: number, data: CompetenceRequest | FormData): Observable<Competence> {
+  return this.http.put<Competence>(`${this.apiUrl}/${id}`, data);
+}
 
   supprimer(id: number): Observable<void> {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);

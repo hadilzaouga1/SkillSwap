@@ -27,10 +27,10 @@ export interface Exchange {
   durationHours: number;
   proposedDateTime: string;
   status: ExchangeStatus;
+  meetingLink: string | null; // <-- AJOUT ICI
   createdAt: string;
   updatedAt: string;
 }
-
 
 export interface ExchangeRequest {
   skillId: number;

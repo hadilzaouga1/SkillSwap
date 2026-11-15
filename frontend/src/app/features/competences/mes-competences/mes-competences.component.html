@@ -42,8 +42,21 @@
       <h3 class="text-lg font-bold text-gray-900 mb-2">{{ c.titre }}</h3>
       <p class="text-sm text-gray-500 mb-4 line-clamp-2 flex-1">{{ c.description }}</p>
       
-      <div class="text-xs font-medium text-gray-400 mb-6 bg-gray-50 p-2 rounded-lg inline-block w-fit">
+      <div class="text-xs font-medium text-gray-400 mb-4 bg-gray-50 p-2 rounded-lg inline-block w-fit">
         Niveau : {{ c.niveau | niveau }}
+      </div>
+
+      <!-- Affichage du PDF attaché le cas échéant -->
+      <div *ngIf="c.documentUrl" class="mb-6 pt-3 border-t border-gray-100 flex items-center justify-between text-sm">
+        <div class="flex items-center gap-2 truncate">
+          <span class="text-lg">📄</span>
+          <!-- CORRECTION ICI : utilisation de baseUrl -->
+          <a [href]="baseUrl + c.documentUrl" target="_blank" rel="noopener noreferrer" 
+             class="font-bold text-[#5B8A72] hover:underline truncate">
+            {{ c.documentName || 'Ouvrir le support associé' }}
+          </a>
+        </div>
+        <span class="text-xs text-gray-400 font-medium">PDF</span>
       </div>
 
       <div class="flex items-center gap-3 pt-4 border-t border-gray-100 mt-auto">

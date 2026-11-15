@@ -43,4 +43,17 @@ public class Competence {
 
     @Column(name = "etudiant_id", nullable = false)
     private Long etudiantId;
+
+    // Nouveaux champs pour le support PDF attaché à la compétence
+    @Column(name = "document_url", length = 500)
+    private String documentUrl;
+
+    @Column(name = "document_name", length = 255)
+    private String documentName;
+
+    @Column(name = "stored_name", length = 255)
+    private String storedName;
+
+    @Column(name = "document_size")
+    private Long documentSize;
 }

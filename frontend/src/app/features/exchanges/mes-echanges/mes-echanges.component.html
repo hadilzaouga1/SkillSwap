@@ -83,6 +83,13 @@
       <div class="flex flex-col justify-center gap-2 min-w-[180px] border-t md:border-t-0 md:border-l border-gray-100 pt-4 md:pt-0 md:pl-6">
         <p *ngIf="aide(e)" class="text-xs font-medium text-gray-400 mb-2 text-center">{{ aide(e) }}</p>
 
+        <!-- BOUTON REJOINDRE LA VISIO (AJOUT) -->
+        <a *ngIf="e.meetingLink && (e.status === 'ACCEPTED' || e.status === 'AWAITING_CONFIRMATION')" 
+           [href]="e.meetingLink" target="_blank" rel="noopener noreferrer"
+           class="w-full text-center bg-blue-500 text-white text-sm font-bold py-2.5 rounded-xl hover:bg-blue-600 transition-colors shadow-sm mb-2">
+          📹 Rejoindre la réunion
+        </a>
+
         <!-- Prestataire : Accepter/Refuser -->
         <ng-container *ngIf="estPrestataire(e) && e.status === 'PENDING'">
           <button (click)="accepter(e)" class="w-full bg-[#5B8A72] text-white text-sm font-bold py-2.5 rounded-xl hover:bg-[#4A725D] transition-colors shadow-sm">

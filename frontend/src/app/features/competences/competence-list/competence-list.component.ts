@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
-import { LucideAngularModule, Search, ArrowRight } from 'lucide-angular'; // <-- LES ICÔNES ICI
+import { LucideAngularModule, Search, ArrowRight } from 'lucide-angular';
 import { CompetenceService } from '../../../core/services/competence.service';
 import { CategorieService } from '../../../core/services/categorie.service';
 import { UtilisateurService } from '../../../core/services/utilisateur.service';
@@ -11,6 +11,7 @@ import { Competence, FiltresCompetence, NIVEAUX } from '../../../core/models/com
 import { Categorie } from '../../../core/models/categorie.model';
 import { NiveauPipe } from '../../../shared/pipes/niveau.pipe';
 import { messageErreur } from '../../../core/utils/erreur.util';
+import { API_URLS } from '../../../core/config/api.config'; // <-- AJOUT
 
 @Component({
   selector: 'app-competence-list',
@@ -31,6 +32,7 @@ export class CompetenceListComponent implements OnInit {
   niveaux = NIVEAUX;
 
   readonly icons = { Search, ArrowRight };
+  readonly baseUrl = API_URLS.gateway.replace('/api', ''); // <-- AJOUT (donne http://localhost:8085)
 
   filtres: FiltresCompetence = { motCle: '', categorieId: null, niveau: '' };
   noms: Record<number, string> = {};

@@ -31,7 +31,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
     private final SecretKey cle;
 
     public JwtAuthenticationFilter(@Value("${skillswap.jwt.secret}") String secret) {
-        // On affiche la clé au démarrage (les 5 premiers caractères) pour vérifier qu'elle est bien chargée
         System.out.println("🔑 Gateway initialisée avec le secret commençant par : " + secret.substring(0, Math.min(5, secret.length())));
         this.cle = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
     }
@@ -63,7 +62,6 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
                 System.out.println("✅ Token valide pour l'utilisateur : " + userId + " (Rôle : " + role + ")");
                 
             } catch (JwtException | IllegalArgumentException e) {
-                // C'EST ICI QU'ON AJOUTE LE LOG POUR VOIR L'ERREUR
                 System.err.println("❌ ERREUR DE VALIDATION DU TOKEN sur " + chemin + " : " + e.getMessage());
                 
                 return erreur(exchange, HttpStatus.UNAUTHORIZED,
@@ -102,6 +100,7 @@ public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
         if (HttpMethod.GET.equals(methode)) {
             return chemin.equals("/api/competences")
                     || chemin.matches("/api/competences/\\d+")
+                    || chemin.startsWith("/api/competences/files/") // <-- AJOUT ICI
                     || chemin.equals("/api/categories")
                     || chemin.matches("/api/utilisateurs/\\d+");
         }

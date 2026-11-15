@@ -5,6 +5,8 @@ import com.skillswap.exchange_service.client.CreditClient;
 import com.skillswap.exchange_service.client.HoldRequest;
 import com.skillswap.exchange_service.client.SkillClient;
 import com.skillswap.exchange_service.client.SkillDto;
+import com.skillswap.exchange_service.client.NotificationClient;
+import com.skillswap.exchange_service.client.ReminderRequest;
 import com.skillswap.exchange_service.dto.ExchangeRequest;
 import com.skillswap.exchange_service.dto.ExchangeResponse;
 import com.skillswap.exchange_service.dto.ProposeTimeRequest;
@@ -15,9 +17,11 @@ import com.skillswap.exchange_service.repository.ExchangeRepository;
 import feign.FeignException;
 import org.springframework.http.HttpStatus;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 
@@ -34,13 +38,16 @@ public class ExchangeService {
     private final ExchangeRepository exchangeRepository;
     private final SkillClient skillClient;
     private final CreditClient creditClient;
+    private final NotificationClient notificationClient; // AJOUT
 
     public ExchangeService(ExchangeRepository exchangeRepository,
                            SkillClient skillClient,
-                           CreditClient creditClient) {
+                           CreditClient creditClient,
+                           NotificationClient notificationClient) { // AJOUT
         this.exchangeRepository = exchangeRepository;
         this.skillClient = skillClient;
         this.creditClient = creditClient;
+        this.notificationClient = notificationClient;
     }
 
     // ------------------------------------------------------------------ création
@@ -130,8 +137,10 @@ public class ExchangeService {
         requireProvider(e, userId, "Seul le prestataire peut accepter cette demande");
         requireStatus(e, "accepter", PENDING);
 
-        // Les crédits sont déjà bloqués à la création. On change juste le statut.
         e.setStatus(ACCEPTED);
+        if (e.getMeetingLink() == null || e.getMeetingLink().isBlank()) {
+            e.setMeetingLink("https://meet.jit.si/SkillSwap-Exchange-" + e.getId() + "-" + java.util.UUID.randomUUID().toString().substring(0, 6));
+        }
         return save(e);
     }
 
@@ -162,8 +171,10 @@ public class ExchangeService {
         requireRequester(e, userId, "Seul le demandeur peut accepter le nouveau créneau");
         requireStatus(e, "accepter le nouveau créneau", TIME_PROPOSED);
 
-        // Les crédits sont déjà bloqués.
         e.setStatus(ACCEPTED);
+        if (e.getMeetingLink() == null || e.getMeetingLink().isBlank()) {
+            e.setMeetingLink("https://meet.jit.si/SkillSwap-Exchange-" + e.getId() + "-" + java.util.UUID.randomUUID().toString().substring(0, 6));
+        }
         return save(e);
     }
 
@@ -198,6 +209,30 @@ public class ExchangeService {
         transferCredits(e.getId());
         e.setStatus(COMPLETED);
         return save(e);
+    }
+
+    // AJOUT : Planificateur qui tourne toutes les minutes
+    @Scheduled(fixedRate = 60000)
+    public void envoyerRappelsReunion() {
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime in10Mins = now.plusMinutes(10);
+
+        // On cherche les échanges ACCEPTED qui commencent entre maintenant et dans 10 minutes
+        List<Exchange> upcoming = exchangeRepository.findByStatusAndReminderSentFalseAndProposedDateTimeBetween(
+                ACCEPTED, now, in10Mins);
+
+        for (Exchange e : upcoming) {
+            try {
+                notificationClient.envoyerRappel(new ReminderRequest(
+                        e.getId(), e.getRequesterId(), e.getProviderId(), e.getSkillTitle(), e.getMeetingLink()
+                ));
+                e.setReminderSent(true);
+                exchangeRepository.save(e);
+                System.out.println("✅ Rappel envoyé pour l'échange " + e.getId());
+            } catch (Exception ex) {
+                System.err.println("❌ Erreur d'envoi de rappel pour l'échange " + e.getId() + " : " + ex.getMessage());
+            }
+        }
     }
 
     // ------------------------------------------------------------ crédits (credit-service)

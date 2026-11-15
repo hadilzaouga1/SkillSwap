@@ -9,6 +9,7 @@
   <ng-container *ngIf="data as d">
     <ng-container *ngIf="!erreur || d.exchange">
 
+      <!-- EN-TÊTE DE LA SÉANCE -->
       <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-4">
         <div class="flex flex-wrap items-start justify-between gap-4">
           <div>
@@ -16,10 +17,21 @@
             <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight mt-1">{{ d.session.title || d.exchange.skillTitle }}</h1>
             <p *ngIf="d.session.summary" class="text-gray-500 mt-2 text-lg">{{ d.session.summary }}</p>
           </div>
-          <button *ngIf="d.canEdit && !edition" (click)="ouvrirEdition()"
-                  class="bg-[#5B8A72] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#4A725D] shadow-lg shadow-[#5B8A72]/30">
-            {{ d.exists ? 'Modifier la fiche' : 'Décrire la séance' }}
-          </button>
+
+          <!-- BOUTON REJOINDRE VISIO (avec alerte de temps) -->
+          <div class="flex flex-col gap-3 items-end">
+            <a *ngIf="d.exchange.meetingLink && d.exchange.status !== 'COMPLETED' && d.exchange.status !== 'AWAITING_CONFIRMATION'" 
+               [href]="d.exchange.meetingLink" 
+               (click)="rejoindreReunion($event)"
+               target="_blank" rel="noopener noreferrer"
+               class="bg-blue-500 text-white px-6 py-3 rounded-xl font-bold text-sm hover:bg-blue-600 transition-colors shadow-lg shadow-blue-500/30 flex items-center gap-2">
+              📹 Rejoindre la réunion
+            </a>
+            <button *ngIf="d.canEdit && !edition" (click)="ouvrirEdition()"
+                    class="bg-[#5B8A72] text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-[#4A725D] shadow-lg shadow-[#5B8A72]/30">
+              {{ d.exists ? 'Modifier la fiche' : 'Décrire la séance' }}
+            </button>
+          </div>
         </div>
 
         <div class="flex flex-wrap gap-2 text-xs font-bold">
@@ -42,6 +54,7 @@
         </div>
       </div>
 
+      <!-- FORMULAIRE D'ÉDITION -->
       <form *ngIf="edition" (ngSubmit)="enregistrer()" #f="ngForm"
             class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-6">
         <div class="flex flex-wrap items-center justify-between gap-3">
@@ -114,12 +127,9 @@
               <option [ngValue]="null">—</option>
               <option *ngFor="let x of modes" [value]="x[0]">{{ x[1] }}</option>
             </select></label>
-          <label class="block text-sm font-bold text-gray-700">Plateforme (Meet, Zoom, Teams…)
-            <input name="platform" [(ngModel)]="form.platform" maxlength="80"
-                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
-          <label class="block text-sm font-bold text-gray-700">Lien de la réunion
-            <input name="meetingLink" type="url" [(ngModel)]="form.meetingLink" placeholder="https://…"
-                   class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
+          
+          <!-- CHAMPS MEETINGLINK ET PLATEFORME SUPPRIMÉS (AUTO-GÉNÉRÉS) -->
+          
           <label class="md:col-span-2 block text-sm font-bold text-gray-700">Lieu (si présentiel)
             <input name="location" [(ngModel)]="form.location" maxlength="200" placeholder="Bibliothèque, salle 12…"
                    class="mt-1 w-full rounded-xl border border-gray-200 px-4 py-2.5 font-normal outline-none"></label>
@@ -141,7 +151,24 @@
         </div>
       </form>
 
+      <!-- AFFICHAGE DE LA FICHE (LECTURE SEULE) -->
       <ng-container *ngIf="!edition">
+        
+        <!-- PDF DE LA COMPÉTENCE INITIALE (CORRECTION ICI avec 'as docUrl') -->
+        <div *ngIf="competence?.documentUrl as docUrl" class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <span class="w-12 h-12 rounded-xl bg-red-50 text-red-500 flex items-center justify-center text-2xl">📄</span>
+            <div>
+              <p class="font-bold text-gray-900">Support de cours initial</p>
+              <p class="text-sm text-gray-500">Le document fourni par le prestataire pour cette compétence.</p>
+            </div>
+          </div>
+          <a [href]="baseUrl + docUrl" target="_blank" rel="noopener noreferrer" 
+             class="bg-gray-900 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-gray-800 transition-colors">
+            Ouvrir le PDF
+          </a>
+        </div>
+
         <div *ngIf="!d.exists && d.role !== 'PROVIDER'" class="bg-white rounded-[2rem] p-8 border border-dashed border-gray-300 text-center text-gray-500">
           Le prestataire n'a pas encore décrit cette séance. Vous pouvez déjà y ajouter des supports.
         </div>
@@ -180,12 +207,19 @@
             <div><dt class="font-bold text-gray-400 uppercase text-xs">Prérequis</dt><dd class="text-gray-700 mt-0.5">{{ d.session.prerequisites || '—' }}</dd></div>
             <div><dt class="font-bold text-gray-400 uppercase text-xs">Langue</dt><dd class="text-gray-700 mt-0.5">{{ d.session.language || '—' }}</dd></div>
             <div><dt class="font-bold text-gray-400 uppercase text-xs">Matériel</dt><dd class="text-gray-700 mt-0.5">{{ d.session.materials || '—' }}</dd></div>
-            <div><dt class="font-bold text-gray-400 uppercase text-xs">Plateforme</dt><dd class="text-gray-700 mt-0.5">{{ d.session.platform || '—' }}</dd></div>
             <div><dt class="font-bold text-gray-400 uppercase text-xs">Lieu</dt><dd class="text-gray-700 mt-0.5">{{ d.session.location || '—' }}</dd></div>
-            <div class="md:col-span-2" *ngIf="d.session.meetingLink">
-              <dt class="font-bold text-gray-400 uppercase text-xs">Lien de la réunion</dt>
-              <dd class="mt-0.5"><a [href]="d.session.meetingLink" target="_blank" rel="noopener noreferrer" class="text-[#5B8A72] font-bold hover:underline break-all">{{ d.session.meetingLink }}</a></dd>
+            
+            <!-- LIEN DE LA RÉUNION (AUTO) -->
+            <div class="md:col-span-2" *ngIf="d.session.meetingLink || d.exchange.meetingLink">
+              <dt class="font-bold text-gray-400 uppercase text-xs">Lien de la réunion (Auto-généré)</dt>
+              <dd class="mt-0.5">
+                <a [href]="d.session.meetingLink || d.exchange.meetingLink" target="_blank" rel="noopener noreferrer" 
+                   class="text-[#5B8A72] font-bold hover:underline break-all">
+                  {{ d.session.meetingLink || d.exchange.meetingLink }}
+                </a>
+              </dd>
             </div>
+            
             <div class="md:col-span-2" *ngIf="d.session.deliveryNotes">
               <dt class="font-bold text-gray-400 uppercase text-xs">Comment la séance sera dispensée</dt>
               <dd class="text-gray-700 mt-0.5 whitespace-pre-line">{{ d.session.deliveryNotes }}</dd>
@@ -194,10 +228,11 @@
         </div>
       </ng-container>
 
+      <!-- SUPPORTS DE LA SÉANCE (AJOUTS MANUELS) -->
       <div class="bg-white rounded-[2rem] p-8 border border-gray-100 shadow-sm space-y-5">
-        <h2 class="text-lg font-extrabold text-gray-900">Supports de la séance <span class="text-gray-400 font-bold text-sm">({{ d.resources.length }})</span></h2>
+        <h2 class="text-lg font-extrabold text-gray-900">Supports ajoutés à la séance <span class="text-gray-400 font-bold text-sm">({{ d.resources.length }})</span></h2>
 
-        <p *ngIf="!d.resources.length" class="text-gray-400 text-sm">Aucun support pour le moment.</p>
+        <p *ngIf="!d.resources.length" class="text-gray-400 text-sm">Aucun support supplémentaire pour le moment.</p>
 
         <ul class="space-y-3">
           <li *ngFor="let s of d.resources" class="flex items-center gap-4 bg-gray-50 rounded-2xl p-4">

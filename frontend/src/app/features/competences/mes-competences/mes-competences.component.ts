@@ -5,8 +5,8 @@ import { CompetenceService } from '../../../core/services/competence.service';
 import { Competence, StatutValidation } from '../../../core/models/competence.model';
 import { NiveauPipe } from '../../../shared/pipes/niveau.pipe';
 import { messageErreur } from '../../../core/utils/erreur.util';
+import { API_URLS } from '../../../core/config/api.config'; // <-- AJOUT
 
-/** Page "Mes compétences" : liste, modification et suppression de ses propres compétences (US6). */
 @Component({
   selector: 'app-mes-competences',
   standalone: true,
@@ -18,6 +18,8 @@ export class MesCompetencesComponent implements OnInit {
   competences: Competence[] = [];
   loading = true;
   erreur = '';
+  
+  readonly baseUrl = API_URLS.gateway.replace('/api', ''); // <-- AJOUT
 
   constructor(private competenceService: CompetenceService) {}
 
@@ -39,7 +41,6 @@ export class MesCompetencesComponent implements OnInit {
       return;
     }
     this.competenceService.supprimer(c.id).subscribe({
-      // On retire la carte de la liste sans recharger la page
       next: () => (this.competences = this.competences.filter((x) => x.id !== c.id)),
       error: (err) => (this.erreur = messageErreur(err))
     });

@@ -15,6 +15,7 @@ public record ExchangeResponse(
         Integer durationHours,
         LocalDateTime proposedDateTime,
         ExchangeStatus status,
+        String meetingLink,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
@@ -29,6 +30,7 @@ public record ExchangeResponse(
                 e.getDurationHours(),
                 e.getProposedDateTime(),
                 e.getStatus(),
+                e.getMeetingLink(),
                 e.getCreatedAt(),
                 e.getUpdatedAt()
         );
