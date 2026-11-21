@@ -1,22 +1,21 @@
-import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
-import { catchError, throwError } from 'rxjs';
-import { AuthService } from '../services/auth.service';
+import { from, switchMap } from 'rxjs';
+import { API_URLS } from '../config/api.config';
+import { KeycloakService } from '../services/keycloak.service';
+
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const auth = inject(AuthService);
-  const token = auth.token;
+  const keycloak = inject(KeycloakService);
 
-  const requete = token
-    ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-    : req;
+  if (!req.url.startsWith(API_URLS.gateway) || !keycloak.authentifie) {
+    return next(req);
+  }
 
-  return next(requete).pipe(
-    catchError((err: HttpErrorResponse) => {
-      if (err.status === 401 && !req.url.includes('/auth/')) {
-        auth.deconnexion();
-      }
-      return throwError(() => err);
+  return from(keycloak.assurerTokenValide()).pipe(
+    switchMap(() => {
+      const token = keycloak.token;
+      return next(token ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } }) : req);
     })
   );
 };

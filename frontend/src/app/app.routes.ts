@@ -1,14 +1,12 @@
 import { Routes } from '@angular/router';
 import { MainLayoutComponent } from './layout/main-layout/main-layout.component';
 
-import { authGuard, roleGuard } from './core/guards/auth.guard';
+import { authGuard, roleGuard, connexionRedirectGuard, inscriptionRedirectGuard } from './core/guards/auth.guard';
 import { CompetenceListComponent } from './features/competences/competence-list/competence-list.component';
 import { CompetenceFormComponent } from './features/competences/competence-form/competence-form.component';
 import { MesCompetencesComponent } from './features/competences/mes-competences/mes-competences.component';
 import { ProfilDetailComponent } from './features/profil/profil-detail/profil-detail.component';
 import { MonProfilComponent } from './features/profil/mon-profil/mon-profil.component';
-import { ConnexionComponent } from './features/auth/connexion/connexion.component';
-import { InscriptionComponent } from './features/auth/inscription/inscription.component';
 import { CompetencesAValiderComponent } from './features/moderation/competences-a-valider/competences-a-valider.component';
 import { DemandeEchangeComponent } from './features/exchanges/demande-echange/demande-echange.component';
 import { MesEchangesComponent } from './features/exchanges/mes-echanges/mes-echanges.component';
@@ -18,8 +16,9 @@ import { MesCreditsComponent } from './features/credits/mes-credits/mes-credits.
 import { AdminDashboardComponent } from './features/admin/admin-dashboard/admin-dashboard.component';
 
 export const routes: Routes = [
-  { path: 'connexion', component: ConnexionComponent },
-  { path: 'inscription', component: InscriptionComponent },
+  // La connexion et l'inscription sont gérées par Keycloak : ces routes redirigent vers lui.
+  { path: 'connexion', canActivate: [connexionRedirectGuard], children: [] },
+  { path: 'inscription', canActivate: [inscriptionRedirectGuard], children: [] },
   {
     path: '',
     component: MainLayoutComponent,

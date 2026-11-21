@@ -11,7 +11,7 @@ export interface AuthResponse {
   token: string;
   utilisateur: UtilisateurConnecte;
 }
-
+/*
 export interface ConnexionRequest {
   email: string;
   motDePasse: string;
@@ -22,3 +22,4 @@ export interface InscriptionRequest extends ConnexionRequest {
   universite: string;
   filiere: string;
 }
+*/
