@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: api-gateway
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/skillswap
   cloud:
     gateway:
       default-filters:
@@ -62,25 +67,29 @@ spring:
           predicates:
             - Path=/api/admin/**
 
-      globalcors:
-        cors-configurations:
-          '[/**]':
-            allowedOrigins:
-              - "http://localhost:4200"
-            allowedMethods:
-              - GET
-              - POST
-              - PUT
-              - PATCH
-              - DELETE
-              - OPTIONS
-            allowedHeaders: "*"
-            allowCredentials: true
+#      globalcors:
+ #       cors-configurations:
+  #        '[/**]':
+   #         allowedOrigins:
+    #          - "http://localhost:4200"
+     #       allowedMethods:
+      #        - GET
+       #       - POST
+        #      - PUT
+         #     - PATCH
+          #    - DELETE
+           #   - OPTIONS
+            #allowedHeaders: "*"
+             #allowCredentials: true
+            
 
 skillswap:
-  jwt:
-    secret: MaSuperCleSecreteUltraLonguePourSkillSwap2026!
+  identity:
+      url: http://localhost:8081
+      internal-key: dev-internal-key-change-me
+  #jwt:
+   # secret: MaSuperCleSecreteUltraLonguePourSkillSwap2026!
 
 logging:
   level:
-    org.springframework.cloud.gateway: TRACE
+    org.springframework.cloud.gateway: INFO
