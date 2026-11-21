@@ -2,6 +2,7 @@ package com.skillswap.gateway;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
@@ -43,18 +44,19 @@ public class IdentityClient {
             nom = jwt.getClaimAsString("preferred_username");
         }
         String email = jwt.getClaimAsString("email");
-        Map<String, String> body = Map.of(
+        Map<String, Object> body = Map.of(
                 "keycloakId", sub,
                 "email", email == null ? "" : email,
-                "nom", nom == null ? "" : nom);
+                "nom", nom == null ? "" : nom,
+                "emailVerified", Boolean.TRUE.equals(jwt.getClaimAsBoolean("email_verified")));
 
         return webClient.post()
                 .uri("/internal/users/sync")
                 .header("X-Internal-Key", internalKey)
                 .bodyValue(body)
                 .retrieve()
-                .onStatus(s -> s.value() == 403, r -> Mono.error(
-                        new ResponseStatusException(HttpStatus.FORBIDDEN, "Ce compte est suspendu")))
+                .onStatus(HttpStatusCode::is4xxClientError, r -> Mono.error(
+                        new ResponseStatusException(r.statusCode(), "Compte non autorisé")))
                 .bodyToMono(SyncResponse.class)
                 .map(SyncResponse::id)
                 .doOnNext(id -> cache.put(sub, new Cached(id, System.currentTimeMillis() + TTL_MS)))

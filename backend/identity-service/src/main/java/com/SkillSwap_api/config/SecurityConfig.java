@@ -31,7 +31,8 @@ public class SecurityConfig {
             
             // Autorise l'accès public à l'authentification et à Swagger
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/api/utilisateurs/**").permitAll()
+                .requestMatchers("/internal/**").permitAll()
+                .requestMatchers("/api/utilisateurs/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
                 .anyRequest().authenticated()
             );

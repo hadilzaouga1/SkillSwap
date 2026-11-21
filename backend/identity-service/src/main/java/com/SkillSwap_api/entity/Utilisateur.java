@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import lombok.ToString;
+//import lombok.ToString;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 
@@ -36,9 +36,13 @@ public class Utilisateur {
      * Exclu du toString() pour ne jamais apparaître dans les logs.
      * Aucun DTO ne le renvoie au frontend.
      */
+    /* 
     @ToString.Exclude
     @Column(name = "mot_de_passe", length = 255)
     private String motDePasse;
+    */
+   @Column(name = "keycloak_id", length = 36, unique = true)
+    private String keycloakId;
 
     /** Rôle : ETUDIANT par défaut. */
     @Enumerated(EnumType.STRING)

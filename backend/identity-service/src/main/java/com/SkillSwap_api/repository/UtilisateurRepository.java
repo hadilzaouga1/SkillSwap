@@ -12,6 +12,5 @@ public interface UtilisateurRepository extends JpaRepository<Utilisateur, Long> 
     /** Recherche par email sans tenir compte des majuscules (connexion). */
     Optional<Utilisateur> findByEmailIgnoreCase(String email);
 
-    /** Vérifie l'unicité de l'email à l'inscription. */
-    boolean existsByEmailIgnoreCase(String email);
+    Optional<Utilisateur> findByKeycloakId(String keycloakId);
 }
