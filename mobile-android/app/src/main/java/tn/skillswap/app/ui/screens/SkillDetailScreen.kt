@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
 import tn.skillswap.app.data.*
+import tn.skillswap.app.ui.ouvrirLien
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -66,6 +67,12 @@ fun SkillDetailScreen(repo: Repository, skillId: Long, onRetour: () -> Unit, onE
                         if (comp.niveau.isNotBlank()) Etiquette(comp.niveau.lowercase().replaceFirstChar { it.uppercase() })
                     }
                     Text(comp.description)
+                    // Document PDF joint par l'étudiant : Intent implicite ACTION_VIEW (public, via la passerelle)
+                    comp.documentUrl?.let { url ->
+                        OutlinedButton(onClick = { ctx.ouvrirLien(repo.urlAbsolue(url)) }, modifier = Modifier.fillMaxWidth()) {
+                            Text("📄 " + (comp.documentName ?: "Document joint"))
+                        }
+                    }
                     comp.disponibilites?.let { Text("Disponibilités : $it", color = MaterialTheme.colorScheme.onSurfaceVariant) }
                     rep?.takeIf { it.count > 0 }?.let {
                         Text("★ ${"%.1f".format(it.average)} (${it.count} avis)" + (it.badge?.let { b -> " · 🏅 ${b.label}" } ?: ""),

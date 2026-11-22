@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -17,8 +18,9 @@ import tn.skillswap.app.data.messageUtilisateur
 
 @Composable
 fun LoginScreen(repo: Repository, onConnecte: () -> Unit, onInscription: () -> Unit) {
-    var email by remember { mutableStateOf("hadil@univ.tn") }
-    var mdp by remember { mutableStateOf("Password123!") }
+    // Compte Keycloak : email (ou nom d'utilisateur) et mot de passe
+    var email by rememberSaveable { mutableStateOf("") }
+    var mdp by rememberSaveable { mutableStateOf("") }
     var erreur by remember { mutableStateOf<String?>(null) }
     var charge by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
@@ -32,7 +34,7 @@ fun LoginScreen(repo: Repository, onConnecte: () -> Unit, onInscription: () -> U
         Text("Échangez vos compétences : 1 h = 1 crédit", color = MaterialTheme.colorScheme.onSurfaceVariant)
         Spacer(Modifier.height(24.dp))
         Carte {
-            OutlinedTextField(email, { email = it }, label = { Text("Email") }, singleLine = true,
+            OutlinedTextField(email, { email = it }, label = { Text("Email ou nom d'utilisateur") }, singleLine = true,
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email), modifier = Modifier.fillMaxWidth())
             OutlinedTextField(mdp, { mdp = it }, label = { Text("Mot de passe") }, singleLine = true,
                 visualTransformation = PasswordVisualTransformation(), modifier = Modifier.fillMaxWidth())

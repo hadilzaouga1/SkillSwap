@@ -32,6 +32,9 @@ class HomeActivity : ComponentActivity() {
             donnerAvis = { e -> retourEnfant.launch(intentVers<AvisActivity>(Extras.EXCHANGE_ID to e.id, Extras.EXCHANGE_TITLE to e.skillTitle)) },
             ouvrirAssistant = { startActivity(intentVers<AssistantActivity>(Extras.PAGE to "accueil")) },
             ajouterAuCalendrier = ::ajouterAuCalendrier,
+            ouvrirLien = { url -> ouvrirLien(url) },
+            ouvrirCredits = { startActivity(intentVers<CreditsActivity>()) },
+            ouvrirMesCompetences = { retourEnfant.launch(intentVers<MesCompetencesActivity>()) },
             deconnexion = {
                 startActivity(Intent(this, LoginActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK))
             },
