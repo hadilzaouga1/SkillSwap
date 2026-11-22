@@ -2,9 +2,7 @@ package tn.skillswap.app.data
 
 import kotlinx.serialization.Serializable
 
-@Serializable data class ConnexionRequest(val email: String, val motDePasse: String)
 @Serializable data class Utilisateur(val id: Long, val nom: String, val email: String, val role: String)
-@Serializable data class AuthResponse(val token: String, val utilisateur: Utilisateur)
 
 @Serializable
 data class CategorieInfo(val id: Long = 0, val nom: String = "")
@@ -19,6 +17,9 @@ data class Competence(
     val statutValidation: String = "",
     val categorie: CategorieInfo? = null,
     val etudiantId: Long? = null,
+    val documentUrl: String? = null,
+    val documentName: String? = null,
+    val documentSize: Long? = null,
 )
 
 @Serializable
@@ -32,6 +33,7 @@ data class Exchange(
     val durationHours: Int = 1,
     val proposedDateTime: String = "",
     val status: String = "PENDING",
+    val meetingLink: String? = null,
 )
 
 @Serializable
@@ -209,13 +211,43 @@ data class Reputation(
 @Serializable
 data class Badge(val code: String, val label: String)
 
+@Serializable data class UnreadCountResponse(val unreadCount: Int = 0)
 @Serializable
-data class InscriptionRequest(
-    val nom: String,
-    val email: String,
-    val motDePasse: String,
-    val universite: String,
-    val filiere: String
+data class Solde(val userId: Long = 0, val balance: Int = 0, val reserved: Int = 0, val available: Int = 0)
+
+@Serializable
+data class TransactionCredit(
+    val id: Long,
+    val type: String,
+    val amount: Int,
+    val balanceAfter: Int = 0,
+    val exchangeId: Long? = null,
+    val description: String? = null,
+    val createdAt: String = "",
 )
 
-@Serializable data class UnreadCountResponse(val unreadCount: Int = 0)
+// ---------------------------------------------------------------- Compétences (skill-service)
+@Serializable
+data class Categorie(val id: Long, val nom: String)
+
+@Serializable
+data class CompetenceRequest(
+    val titre: String,
+    val description: String,
+    val niveau: String,
+    val categorieId: Long,
+    val disponibilites: String? = null,
+)
+@Serializable
+data class Profil(
+    val id: Long,
+    val nom: String,
+    val email: String = "",
+    val universite: String? = null,
+    val filiere: String? = null,
+    val noteMoyenne: Double? = null,
+)
+@Serializable
+data class ProfilUpdate(val nom: String, val universite: String? = null, val filiere: String? = null)
+@Serializable
+data class ProposeTimeRequest(val proposedDateTime: String)
