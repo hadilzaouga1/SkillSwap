@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .cors(Customizer.withDefaults())
                 .authorizeExchange(ex -> ex
                         .pathMatchers(HttpMethod.OPTIONS).permitAll()
+                        .pathMatchers("/fallback/**").permitAll()
                         .pathMatchers(HttpMethod.GET,
                                 "/api/competences",
                                 "/api/competences/{id:[0-9]+}",
