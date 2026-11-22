@@ -1,0 +1,5 @@
+# Configuration de api-gateway
+logging:
+  level:
+    org.springframework.cloud.gateway: INFO
+    org.springframework.security: WARN

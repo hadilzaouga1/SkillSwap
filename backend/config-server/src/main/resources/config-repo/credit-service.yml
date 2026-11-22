@@ -1,0 +1,14 @@
+# Configuration de credit-service
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+skillswap:
+  credits:
+    welcome: 3             # crédits offerts à la création d'un compte (1 crédit = 1 heure)
+
+logging:
+  level:
+    com.skillswap.credit_service: INFO

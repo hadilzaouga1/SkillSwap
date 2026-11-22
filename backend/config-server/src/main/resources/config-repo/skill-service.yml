@@ -1,0 +1,10 @@
+# Configuration de skill-service
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+logging:
+  level:
+    com.skillswap.skill_service: INFO

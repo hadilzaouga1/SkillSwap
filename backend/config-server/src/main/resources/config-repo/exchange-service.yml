@@ -1,0 +1,42 @@
+# Configuration de exchange-service (le nom du fichier = spring.application.name du client).
+
+# --- Timeouts Feign (le défaut est de 60 s, trop long) ---
+spring:
+  cloud:
+    openfeign:
+      client:
+        config:
+          default:
+            connect-timeout: 2000
+            read-timeout: 3000
+
+# --- Resilience4j : Circuit Breaker + TimeLimiter ---
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        sliding-window-type: COUNT_BASED
+        sliding-window-size: 10                  # on observe les 10 derniers appels
+        minimum-number-of-calls: 5               # pas de décision avant 5 appels
+        failure-rate-threshold: 50               # >= 50 % d'échecs => circuit OUVERT
+        wait-duration-in-open-state: 10s         # le circuit reste ouvert 10 s
+        permitted-number-of-calls-in-half-open-state: 3
+        automatic-transition-from-open-to-half-open-enabled: true
+        register-health-indicator: true
+        # Les erreurs 4xx (409, 404...) sont des erreurs métier : elles ne comptent pas comme des pannes.
+        ignore-exceptions:
+          - feign.FeignException$FeignClientException
+  timelimiter:
+    configs:
+      default:
+        timeout-duration: 4s                     # le défaut de Spring Cloud est 1 s !
+
+# --- Actuator : pour visualiser l'état des circuits ---
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,circuitbreakers,circuitbreakerevents
+  health:
+    circuitbreakers:
+      enabled: true

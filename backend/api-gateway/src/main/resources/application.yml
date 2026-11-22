@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
   security:
     oauth2:
       resourceserver:
@@ -90,6 +92,8 @@ skillswap:
   #jwt:
    # secret: MaSuperCleSecreteUltraLonguePourSkillSwap2026!
 
-logging:
-  level:
-    org.springframework.cloud.gateway: INFO
+#Supprime logging car on change vers Config-server
+#
+#logging:
+ # level:
+  #  org.springframework.cloud.gateway: INFO
