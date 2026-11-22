@@ -1,0 +1,5 @@
+# Configuration PARTAGÉE : appliquée à tous les clients du Config Server.
+eureka:
+  client:
+    serviceUrl:
+      defaultZone: http://localhost:8761/eureka/

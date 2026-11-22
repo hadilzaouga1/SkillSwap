@@ -4,6 +4,8 @@ server:
 spring:
   application:
     name: api-gateway
+  config:
+    import: optional:configserver:http://localhost:8888
   security:
     oauth2:
       resourceserver:
@@ -18,78 +20,144 @@ spring:
           uri: http://localhost:8081
           predicates:
             - Path=/api/auth/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: identityCB
+                fallbackUri: forward:/fallback/identity
         - id: identity-service
           uri: http://localhost:8081
           predicates:
             - Path=/api/utilisateurs,/api/utilisateurs/**
-        - id: skill-service-competences
-          uri: http://localhost:8084
-          predicates:
-            - Path=/api/competences,/api/competences/**
-        - id: skill-service-categories
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: identityCB
+                fallbackUri: forward:/fallback/identity
+
+        # ---- skill-service : données par défaut pour les lectures ----
+        - id: skill-categories
           uri: http://localhost:8084
           predicates:
             - Path=/api/categories,/api/categories/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: skillCB
+                fallbackUri: forward:/fallback/categories
+        - id: skill-competences-liste
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/competences,/api/competences/mes-competences
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: skillCB
+                fallbackUri: forward:/fallback/competences
+        - id: skill-competences
+          uri: http://localhost:8084
+          predicates:
+            - Path=/api/competences/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: skillCB
+                fallbackUri: forward:/fallback/skill
         - id: skill-service-moderation
           uri: http://localhost:8084
           predicates:
             - Path=/api/moderation/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: skillCB
+                fallbackUri: forward:/fallback/skill
+
+        # ---- exchange et credit : jamais de fausses données (argent / transactions) ----
         - id: exchange-service
           uri: http://localhost:8082
           predicates:
             - Path=/api/exchanges,/api/exchanges/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: exchangeCB
+                fallbackUri: forward:/fallback/exchange
         - id: credit-service
           uri: http://localhost:8086
           predicates:
             - Path=/api/credits/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: creditCB
+                fallbackUri: forward:/fallback/credit
+
         - id: session-service
           uri: http://localhost:8087
           predicates:
             - Path=/api/sessions/**
           filters:
             - StripPrefix=0
-
+            - name: CircuitBreaker
+              args:
+                name: sessionCB
+                fallbackUri: forward:/fallback/session
         - id: trust-service
           uri: http://localhost:8088
           predicates:
             - Path=/api/reviews/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: trustCB
+                fallbackUri: forward:/fallback/trust
+
+        # ---- notification-service : données par défaut pour les lectures ----
+        - id: notification-unread
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/notifications/unread-count
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notificationCB
+                fallbackUri: forward:/fallback/notifications-unread
+        - id: notification-liste
+          uri: http://localhost:8089
+          predicates:
+            - Path=/api/notifications
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notificationCB
+                fallbackUri: forward:/fallback/notifications
         - id: notification-service
           uri: http://localhost:8089
           predicates:
             - Path=/api/notifications/**
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: notificationCB
+                fallbackUri: forward:/fallback/notification
+
+        # ai-service : volontairement sans Circuit Breaker (réponses longues, jusqu'à 25 s)
         - id: ai-service
           uri: http://localhost:8090
           predicates:
             - Path=/api/ai/**
-
         - id: admin-service
           uri: http://localhost:8081
           predicates:
             - Path=/api/admin/**
-
-#      globalcors:
- #       cors-configurations:
-  #        '[/**]':
-   #         allowedOrigins:
-    #          - "http://localhost:4200"
-     #       allowedMethods:
-      #        - GET
-       #       - POST
-        #      - PUT
-         #     - PATCH
-          #    - DELETE
-           #   - OPTIONS
-            #allowedHeaders: "*"
-             #allowCredentials: true
-            
+          filters:
+            - name: CircuitBreaker
+              args:
+                name: identityCB
+                fallbackUri: forward:/fallback/identity
 
 skillswap:
   identity:
-      url: http://localhost:8081
-      internal-key: dev-internal-key-change-me
-  #jwt:
-   # secret: MaSuperCleSecreteUltraLonguePourSkillSwap2026!
-
-logging:
-  level:
-    org.springframework.cloud.gateway: INFO
+    url: http://localhost:8081
+    internal-key: dev-internal-key-change-me

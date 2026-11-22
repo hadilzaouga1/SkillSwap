@@ -1,0 +1,9 @@
+# Configuration de identity-service (nom du fichier = spring.application.name)
+spring:
+  jpa:
+    show-sql: false        # n'affiche plus les requêtes SQL dans la console
+
+logging:
+  level:
+    com.SkillSwap_api: INFO
+    org.springframework.security: WARN
