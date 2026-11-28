@@ -3,16 +3,17 @@ package com.skillswap.exchange_service.service;
 import com.skillswap.exchange_service.client.CreditAvailabilityDto;
 import com.skillswap.exchange_service.client.CreditClient;
 import com.skillswap.exchange_service.client.HoldRequest;
-import com.skillswap.exchange_service.client.SkillClient;
-import com.skillswap.exchange_service.client.SkillDto;
 import com.skillswap.exchange_service.client.NotificationClient;
 import com.skillswap.exchange_service.client.ReminderRequest;
+import com.skillswap.exchange_service.client.SkillClient;
+import com.skillswap.exchange_service.client.SkillDto;
 import com.skillswap.exchange_service.dto.ExchangeRequest;
 import com.skillswap.exchange_service.dto.ExchangeResponse;
 import com.skillswap.exchange_service.dto.ProposeTimeRequest;
 import com.skillswap.exchange_service.entity.Exchange;
 import com.skillswap.exchange_service.enums.ExchangeStatus;
 import com.skillswap.exchange_service.exception.ApiException;
+import com.skillswap.exchange_service.kafka.ExchangeEventProducer;
 import com.skillswap.exchange_service.repository.ExchangeRepository;
 import feign.FeignException;
 import org.springframework.http.HttpStatus;
@@ -38,16 +39,19 @@ public class ExchangeService {
     private final ExchangeRepository exchangeRepository;
     private final SkillClient skillClient;
     private final CreditClient creditClient;
-    private final NotificationClient notificationClient; // AJOUT
+    private final NotificationClient notificationClient;
+    private final ExchangeEventProducer exchangeEventProducer;
 
     public ExchangeService(ExchangeRepository exchangeRepository,
                            SkillClient skillClient,
                            CreditClient creditClient,
-                           NotificationClient notificationClient) { // AJOUT
+                           NotificationClient notificationClient,
+                           ExchangeEventProducer exchangeEventProducer) {
         this.exchangeRepository = exchangeRepository;
         this.skillClient = skillClient;
         this.creditClient = creditClient;
         this.notificationClient = notificationClient;
+        this.exchangeEventProducer = exchangeEventProducer;
     }
 
     // ------------------------------------------------------------------ création
@@ -104,6 +108,7 @@ public class ExchangeService {
             throw creditServiceUnavailable();
         }
 
+        exchangeEventProducer.publishStatusChanged(saved);
         return ExchangeResponse.from(saved);
     }
 
@@ -118,18 +123,17 @@ public class ExchangeService {
         return ExchangeResponse.from(e);
     }
 
-    @Transactional(readOnly = true)
-    public List<ExchangeResponse> myRequests(Long userId) {
-        return exchangeRepository.findByRequesterIdOrderByCreatedAtDesc(userId)
-                .stream().map(ExchangeResponse::from).toList();
-    }
+@Transactional(readOnly = true)
+public List<ExchangeResponse> myRequests(Long userId) {
+    return exchangeRepository.findByRequesterIdOrderByCreatedAtDesc(userId)
+            .stream().map(ExchangeResponse::from).toList();
+}
 
-    @Transactional(readOnly = true)
-    public List<ExchangeResponse> received(Long userId) {
-        return exchangeRepository.findByProviderIdOrderByCreatedAtDesc(userId)
-                .stream().map(ExchangeResponse::from).toList();
-    }
-
+@Transactional(readOnly = true)
+public List<ExchangeResponse> received(Long userId) {
+    return exchangeRepository.findByProviderIdOrderByCreatedAtDesc(userId)
+            .stream().map(ExchangeResponse::from).toList();
+}
     // ------------------------------------------------------------------ workflow
 
     public ExchangeResponse accept(Long id, Long userId) {
@@ -141,7 +145,7 @@ public class ExchangeService {
         if (e.getMeetingLink() == null || e.getMeetingLink().isBlank()) {
             e.setMeetingLink("https://meet.jit.si/SkillSwap-Exchange-" + e.getId() + "-" + java.util.UUID.randomUUID().toString().substring(0, 6));
         }
-        return save(e);
+        return saveAndPublish(e);
     }
 
     public ExchangeResponse reject(Long id, Long userId) {
@@ -153,7 +157,7 @@ public class ExchangeService {
         releaseCredits(e.getId());
 
         e.setStatus(REJECTED);
-        return save(e);
+        return saveAndPublish(e);
     }
 
     @Transactional
@@ -163,7 +167,7 @@ public class ExchangeService {
         requireStatus(e, "proposer un autre créneau", PENDING);
         e.setProposedDateTime(request.proposedDateTime());
         e.setStatus(TIME_PROPOSED);
-        return save(e);
+        return saveAndPublish(e);
     }
 
     public ExchangeResponse acceptProposal(Long id, Long userId) {
@@ -175,7 +179,7 @@ public class ExchangeService {
         if (e.getMeetingLink() == null || e.getMeetingLink().isBlank()) {
             e.setMeetingLink("https://meet.jit.si/SkillSwap-Exchange-" + e.getId() + "-" + java.util.UUID.randomUUID().toString().substring(0, 6));
         }
-        return save(e);
+        return saveAndPublish(e);
     }
 
     public ExchangeResponse cancel(Long id, Long userId) {
@@ -189,7 +193,7 @@ public class ExchangeService {
         releaseCredits(e.getId());
 
         e.setStatus(CANCELLED);
-        return save(e);
+        return saveAndPublish(e);
     }
 
     @Transactional
@@ -198,7 +202,7 @@ public class ExchangeService {
         requireProvider(e, userId, "Seul le prestataire peut déclarer la séance terminée");
         requireStatus(e, "déclarer la séance terminée", ACCEPTED);
         e.setStatus(AWAITING_CONFIRMATION);
-        return save(e);
+        return saveAndPublish(e);
     }
 
     public ExchangeResponse confirm(Long id, Long userId) {
@@ -208,10 +212,10 @@ public class ExchangeService {
 
         transferCredits(e.getId());
         e.setStatus(COMPLETED);
-        return save(e);
+        return saveAndPublish(e);
     }
 
-    // AJOUT : Planificateur qui tourne toutes les minutes
+    // Planificateur qui tourne toutes les minutes
     @Scheduled(fixedRate = 60000)
     public void envoyerRappelsReunion() {
         LocalDateTime now = LocalDateTime.now();
@@ -292,9 +296,15 @@ public class ExchangeService {
                 .orElseThrow(() -> new ApiException(HttpStatus.NOT_FOUND, "Échange introuvable"));
     }
 
-    private ExchangeResponse save(Exchange e) {
+    private ExchangeResponse saveAndPublish(Exchange e) {
+        Exchange saved = saveEntity(e);
+        exchangeEventProducer.publishStatusChanged(saved);
+        return ExchangeResponse.from(saved);
+    }
+
+    private Exchange saveEntity(Exchange e) {
         try {
-            return ExchangeResponse.from(exchangeRepository.saveAndFlush(e));
+            return exchangeRepository.saveAndFlush(e);
         } catch (ObjectOptimisticLockingFailureException ex) {
             throw new ApiException(HttpStatus.CONFLICT,
                     "Cet échange vient d'être modifié par une autre action, rechargez la page");

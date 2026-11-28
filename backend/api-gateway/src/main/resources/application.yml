@@ -10,7 +10,7 @@ spring:
     oauth2:
       resourceserver:
         jwt:
-          issuer-uri: http://localhost:8180/realms/skillswap
+          issuer-uri: http://127.0.0.1:8180/realms/skillswap
   cloud:
     gateway:
       default-filters:

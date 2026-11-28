@@ -32,7 +32,7 @@ android {
         buildConfigField(
             "String",
             "KEYCLOAK_URL",
-            "\"http://localhost:8180/\""
+            "\"http://127.0.0.1:8180/\""
         )
 
         buildConfigField(
